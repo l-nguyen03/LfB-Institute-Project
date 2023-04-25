@@ -20,8 +20,8 @@ The repo here **_include the dockerfile also_** so that we all have the same doc
 git branch face_regconition.
 ```
 3. He now goes to his branch by using the command ``git checkout -b branch-name`` followed by name of the newly created branch.
-4. He can now write code like normal and save it in the same directory as the git repo.(remember that if you guys start a new working session, remember to always go to your branch first by using ``git branch branch-name`` before saving anything)
-5. After he is done with the code, he can go to the terminal, he can type this command ``git add`` followed by ``git commit -m "some message"`` where message should explain what he has done, like "implemented facial comparison", or "add message forwarding". 
+4. He can now write code like normal and save it in the same directory as the git repo.
+5. After he is done with the code, he can go to the terminal, he can type this command ``git add`` followed by ``git commit -m "some message"`` where message should explain what he has done, like "implemented facial comparison", or "add message forwarding". (remember that if you guys start a new working session, remember to always go to your branch first by using ``git branch branch-name`` before ``git add)
 6. He then pushes his changes to remote branch. Use the ``git push origin branch-name`` command to push your changes to the remote branch.
 7. He will then go to GitHub and create a pull request. Then the team can review his code and give feedbacks, then I will merge the code to main branch.
 8. Once the changes are merged, everyone in the team can pull the updated code to their local machine by using ``git pull origin main``.
