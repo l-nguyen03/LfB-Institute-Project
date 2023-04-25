@@ -1,11 +1,11 @@
-#LfB-Institute-Project
+# LfB-Institute-Project
 Implementation of a simple cheat detection system using face regconition techniques and audio processing. 
 
-##How to Install 
+## How to Install 
 Go to your local directory that you guys save the project in the terminal and enter this line: 
 ''' git clone https://github.com/l-nguyen03/LfB-Institute-Project.git '''
 
-##Example on how to use Git and GitHub for collaboration on the project:
+## Example on how to use Git and GitHub for collaboration on the project:
 
 Example: Ali wants to implement face comparison
 
@@ -18,7 +18,7 @@ Example: Ali wants to implement face comparison
 7. He will then go to GitHub and create a pull request. Then the team can review his code and give feedbacks, then I will merge the code to main branch.
 8. Once the changes are merged, everyone in the team can pull the updated code to their local machine by using ''git pull origin main''.
 
-##GitHub and Git basic commands: 
+## GitHub and Git basic commands: 
 1. git clone <url> - Clone a repository to your local machine.
 2. git pull - Pull changes from the remote repository.
 3. git push - Push changes to the remote repository.
