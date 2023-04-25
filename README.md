@@ -1,4 +1,4 @@
-# LfB-Institute-Project
+#LfB-Institute-Project
 Implementation of a simple cheat detection system using face regconition techniques and audio processing. 
 
 ##How to Install 
