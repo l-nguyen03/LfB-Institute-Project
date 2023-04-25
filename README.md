@@ -26,7 +26,7 @@ git branch face_regconition.
 7. He will then go to GitHub and create a pull request. Then the team can review his code and give feedbacks, then I will merge the code to main branch.
 8. Once the changes are merged, everyone in the team can pull the updated code to their local machine by using ``git pull origin main``.
 
-**Please only add, commit and push your Python codes, you can also additionally push your Dockerfile if you have changed it for others to review and update**
+<span style="background-color: yellow;">**Please only add, commit and push your Python codes, you can also additionally push your Dockerfile if you have changed it for others to review and update**< / span>
 
 ## GitHub and Git basic commands: 
 1. ``git clone <url>`` - Clone a repository to your local machine.
