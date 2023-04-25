@@ -8,7 +8,7 @@ Go to your local directory that you guys want save the project in the terminal a
 ```
 git clone https://github.com/l-nguyen03/LfB-Institute-Project.git .
 ```
-The repo here **_include the dockerfile also_** so that we all have the same dockerfile and can receive updated one if any changes are made so please **don't save it with the directory that has the same dockerfile that Ankit sent.**
+The repo here **_include the dockerfile also_** so that we all have the same dockerfile and can receive updated one if any changes are made so please **don't save it with the directory that has the same dockerfile that Ankit sent.** **_If you are not using MacOS with Apple Silicon then just delete the Dockerfile_arm64 and rename the other dockerfile to Dockerfile only._**
 
 ## Example on how to use Git and GitHub for collaboration on the project:
 
@@ -20,8 +20,8 @@ The repo here **_include the dockerfile also_** so that we all have the same doc
 git branch face_regconition.
 ```
 3. He now goes to his branch by using the command ``git checkout -b branch-name`` followed by name of the newly created branch.
-4. He can now write code like normal and save it in the same directory as the git repo.(remember that if you guys start a new working session, remember to always go to your branch first by using ``git branch branch-name`` before saving anything)
-5. After he is done with the code, he can go to the terminal, he can type this command ``git add`` followed by ``git commit -m "some message"`` where message should explain what he has done, like "implemented facial comparison", or "add message forwarding". 
+4. He can now write code like normal and save it in the same directory as the git repo.
+5. After he is done with the code, he can go to the terminal, he can type this command ``git add`` followed by ``git commit -m "some message"`` where message should explain what he has done, like "implemented facial comparison", or "add message forwarding". (remember that if you guys start a new working session, remember to always go to your branch first by using ``git branch branch-name`` before ``git add)
 6. He then pushes his changes to remote branch. Use the ``git push origin branch-name`` command to push your changes to the remote branch.
 7. He will then go to GitHub and create a pull request. Then the team can review his code and give feedbacks, then I will merge the code to main branch.
 8. Once the changes are merged, everyone in the team can pull the updated code to their local machine by using ``git pull origin main``.
