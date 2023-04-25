@@ -2,10 +2,11 @@
 Implementation of a simple cheat detection system using face regconition techniques and audio processing. 
 
 ## How to Install 
-Go to your local directory that you guys save the project in the terminal and enter this line: 
+Go to your local directory that you guys want save the project in the terminal and enter this line: 
 ```
 git clone https://github.com/l-nguyen03/LfB-Institute-Project.git .
 ```
+The repo here include the dockerfile also so that we all have the same dockerfile and can receive updated one if any changes are made so please don't save it with the directory that has the same dockerfile that Ankit sent. 
 
 ## Example on how to use Git and GitHub for collaboration on the project:
 
