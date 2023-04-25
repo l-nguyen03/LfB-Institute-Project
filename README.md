@@ -2,7 +2,7 @@
 Implementation of a simple cheat detection system using face regconition techniques and audio processing. 
 
 ## How to Install 
-<u> **Prerequsites:** </u> You need an personal access token when you clone the repo, follow this [link](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token) to know how. I recommend also you [install git credential manager](https://github.com/git-ecosystem/git-credential-manager/blob/release/docs/install.md) so you don't have to enter this long ass token everytime you want to do something with the remote repo.
+<u> **Prerequisites:** </u> You need an personal access token when you clone the repo, follow this [link](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token) to know how. I recommend also you [install git credential manager](https://github.com/git-ecosystem/git-credential-manager/blob/release/docs/install.md) so you don't have to enter this long ass token everytime you want to do something with the remote repo.
 Go to your local directory that you guys want save the project in the terminal and enter this line: 
 ```
 git clone https://github.com/l-nguyen03/LfB-Institute-Project.git .
