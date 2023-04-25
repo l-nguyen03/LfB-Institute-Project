@@ -6,7 +6,9 @@ Go to your local directory that you guys save the project in the terminal and en
 ''' git clone https://github.com/l-nguyen03/LfB-Institute-Project.git '''
 
 ##Example on how to use Git and GitHub for collaboration on the project:
+
 Example: Ali wants to implement face comparison
+
 1. Ali will clone the repository to his local machine using the git clone command. This will create a local copy of the repository on his machine.
 2. He then creates a branch for his functionality with ''git branch branch-name'' followed by name of the functionality, here face_regconition.
 3. He now goes to his branch by using the command ''git checkout -b branch-name'' followed by name of the newly created branch.
@@ -15,6 +17,7 @@ Example: Ali wants to implement face comparison
 6. He then pushes his changes to remote branch. Use the ''git push origin branch-name'' command to push your changes to the remote branch.
 7. He will then go to GitHub and create a pull request. Then the team can review his code and give feedbacks, then I will merge the code to main branch.
 8. Once the changes are merged, everyone in the team can pull the updated code to their local machine by using ''git pull origin main''.
+
 ##GitHub and Git basic commands: 
 1. git clone <url> - Clone a repository to your local machine.
 2. git pull - Pull changes from the remote repository.
