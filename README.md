@@ -9,7 +9,7 @@ git clone https://github.com/l-nguyen03/LfB-Institute-Project.git
 
 ## Example on how to use Git and GitHub for collaboration on the project:
 
-Example: Ali wants to implement face comparison
+**_Example: Ali wants to implement face comparison_**
 
 1. Ali will clone the repository to his local machine using the git clone command. This will create a local copy of the repository on his machine.
 2. He then creates a branch for his functionality with ``git branch branch-name`` followed by name of the functionality, ex. 
