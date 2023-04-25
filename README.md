@@ -3,7 +3,7 @@ Implementation of a simple cheat detection system using face regconition techniq
 
 ## How to Install 
 Go to your local directory that you guys save the project in the terminal and enter this line: 
-```git clone https://github.com/l-nguyen03/LfB-Institute-Project.git
+```git clone https://github.com/l-nguyen03/LfB-Institute-Project.git```
 
 ## Example on how to use Git and GitHub for collaboration on the project:
 
