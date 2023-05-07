@@ -3,4 +3,4 @@ README.md
 recorded_audio.wav
 audio_evidence
 __pycache__/
-.devcontainer
+.devcontainer/
