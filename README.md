@@ -4,7 +4,7 @@
 
 Transform audio signals with duration of 2.5 seconds from 5 categories: Computer Keyboard, Working, Whispering, Speech, Traffic noise and roadway noise into melspectrogram by applying STFT on overlapping windows, typically 25 ms with 10 ms stride, take the Power Spectrum and apply Mel-filterbanks. This melspectrogram is fed into the CNN to learn features and result in a model that can classify effectively this sound events. The melspectrogram are done by a package called Kapre as a direct input layer of the CNN.
 
-                                                               ![Alt Text](./plot/Diagramm.png)
+![Alt Text](./plot/Diagramm.png){:width="300px"}
 
 ## Dataset
 Dataset are 1486 wavefiles with duration of 2.5 seconds collected from multiple sources: AudioSet by Google, ESC-50, and self-recorded. The data are time-shifted right and left randomly to increase variation to the data. 
