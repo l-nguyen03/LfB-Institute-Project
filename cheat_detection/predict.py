@@ -35,10 +35,10 @@ wav_file : (string) path to wave file.
 <Return Var> : <Return Type>
 _ : (Boolean) True for non-cheat and False for cheating.
 """
-def predict_audio(wav_file):
+def predict_audio(wav, rate):
 
     #classify sound event
-    rate, audio, audio_batch = audio_preprocess(wav_file)
+    audio, audio_batch = audio_preprocess(wav)
     prediction = audio_prediction.predict(audio_batch)
     predicted_label = np.argmax(prediction, axis=-1)
     for category, index in map.items():
@@ -71,8 +71,8 @@ rate : sampling rate of audio
 wav : reshaped wavefile of dimension (40000,1)
 wav_batch : reshaped wavefile with extra batch dimension (40000, 1, 0)
 """
-def audio_preprocess(wav_file):
-    rate, wav = wavfile.read(wav_file)
+def audio_preprocess(wav):
+    #rate, wav = wavfile.read(wav_file)
     wav = wav.reshape(-1,1)
     if wav.shape[0] < 40000:
         wav = np.pad(wav, ((0, 40000-wav.shape[0]), (0,0)), mode="constant", constant_values = 0)
@@ -80,4 +80,4 @@ def audio_preprocess(wav_file):
         wav = wav[:40000]
     wav_batch = np.expand_dims(wav, axis=0)
 
-    return rate, wav, wav_batch
+    return wav, wav_batch

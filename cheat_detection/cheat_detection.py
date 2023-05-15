@@ -2,6 +2,7 @@ import pyaudio
 import numpy as np
 from scipy.io import wavfile
 from predict import predict_audio
+import time
 
 SAMPLE_RATE = 16000
 DURATION = 3
@@ -47,15 +48,12 @@ None
 None
 '''
 def audio_detection(num_chunks):
-    frames = []
+    stream.start_stream()
     #start recording
-    for _ in range(num_chunks):
-        data = stream.read(CHUNK)
-        frames.append(np.frombuffer(data, dtype=np.int16))
-    recorded_audio = np.hstack(frames)
-    wavfile.write("recorded_audio.wav", SAMPLE_RATE, recorded_audio)
-    predict_audio("recorded_audio.wav")
-
+    data = stream.read(CHUNK*num_chunks)
+    stream.stop_stream()
+    recorded_audio = np.frombuffer(data, dtype=np.int16)
+    predict_audio(recorded_audio, SAMPLE_RATE)
 
 '''
 Describe concisely about what the function does and specify:
@@ -83,7 +81,6 @@ if __name__ == "__main__":
         try: 
             audio_detection(num_chunks)
         except KeyboardInterrupt:
-            stream.stop_stream()
             stream.close()
             audio.terminate()
             break

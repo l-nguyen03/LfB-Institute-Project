@@ -34,7 +34,6 @@ data_train, data_val, train_label, val_label = train_test_split(wav_paths,
 #Stop fitting when val_loss isn't improved after 10 epochs
 early_stoppping = tf.keras.callbacks.EarlyStopping(monitor = "val_loss", patience=10, verbose=1, mode="min")
 
-
 #5 Folds Cross Validation
 
 kfold = KFold(n_splits=5, shuffle=True, random_state=13)

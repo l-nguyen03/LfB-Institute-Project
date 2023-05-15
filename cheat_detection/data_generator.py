@@ -47,6 +47,8 @@ class DataGenerator(tf.keras.utils.Sequence):
             wav = wav.reshape(-1,1)
             if wav.shape[0] < 40000:
                 wav = np.pad(wav, ((0, 40000-wav.shape[0]), (0,0)), mode="constant", constant_values = 0)
+            elif wav.shape[0] > 40000:
+                wav = wav[:40000]
             X[i,] = wav.reshape(-1, 1)
             Y[i,] = tf.keras.utils.to_categorical(label, num_classes=self.num_classes)
         return X, Y
