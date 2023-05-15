@@ -4,7 +4,7 @@ from scipy.io import wavfile
 from predict import predict_audio
 
 SAMPLE_RATE = 16000
-DURATION = 2.5
+DURATION = 3
 CHUNK = 1024
 FORMAT = pyaudio.paInt16
 CHANNELS = 1
@@ -46,23 +46,12 @@ None
 <Return Variable>: <Return Type>
 None
 '''
-def audio_detection():
-    audio = pyaudio.PyAudio()
-    #start stream
-    stream = audio.open(format=FORMAT,
-                    channels=CHANNELS,
-                    rate=SAMPLE_RATE,
-                    input=True,
-                    frames_per_buffer=CHUNK)
-    num_chunks = int(SAMPLE_RATE / CHUNK * DURATION)
+def audio_detection(num_chunks):
     frames = []
     #start recording
     for _ in range(num_chunks):
         data = stream.read(CHUNK)
         frames.append(np.frombuffer(data, dtype=np.int16))
-    stream.stop_stream()
-    stream.close()
-    audio.terminate()
     recorded_audio = np.hstack(frames)
     wavfile.write("recorded_audio.wav", SAMPLE_RATE, recorded_audio)
     predict_audio("recorded_audio.wav")
@@ -81,9 +70,20 @@ def prepare_message():
 
 
 if __name__ == "__main__":
+    audio = pyaudio.PyAudio()
+    #start stream
+    stream = audio.open(format=FORMAT,
+                    channels=CHANNELS,
+                    rate=SAMPLE_RATE,
+                    input=True,
+                    frames_per_buffer=CHUNK)
+    num_chunks = int(SAMPLE_RATE / CHUNK * DURATION)
     #Loop unitl interrupt with Ctrl+C
     while True:
         try: 
-            audio_detection()
+            audio_detection(num_chunks)
         except KeyboardInterrupt:
+            stream.stop_stream()
+            stream.close()
+            audio.terminate()
             break

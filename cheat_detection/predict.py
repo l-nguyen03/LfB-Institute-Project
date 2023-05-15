@@ -1,5 +1,5 @@
 import tensorflow as tf
-from kapre import STFT, Magnitude, ApplyFilterbank, MagnitudeToDecibel
+from kapre import STFT, Magnitude, ApplyFilterbank, MagnitudeToDecibel, LogmelToMFCC
 import numpy as np
 import os
 import json
@@ -11,7 +11,21 @@ NON_CHEAT = ["Working", "Traffic noise, roadway noise"]
 with open("json_mapping.json", "r") as f: 
     map = json.load(f)
 
+script_path = os.path.abspath(__file__)
+dirname = os.path.dirname(script_path)
 
+#Load model
+custom_objects = {
+    'STFT': STFT,
+    'Magnitude': Magnitude,
+    'ApplyFilterbank': ApplyFilterbank,
+    'MagnitudeToDecibel': MagnitudeToDecibel,
+    'LogmelToMFCC' : LogmelToMFCC
+}
+model_path = os.path.join(dirname, "model", "audio_prediction.h5")
+    
+audio_prediction = tf.keras.models.load_model(model_path, custom_objects=custom_objects)
+    
 """
 Predict whether the recorded audio reflect cheating
 
@@ -21,22 +35,8 @@ wav_file : (string) path to wave file.
 <Return Var> : <Return Type>
 _ : (Boolean) True for non-cheat and False for cheating.
 """
-@tf.function
 def predict_audio(wav_file):
 
-    script_path = os.path.abspath(__file__)
-    dirname = os.path.dirname(script_path)
-
-    #Load model
-    custom_objects = {
-        'STFT': STFT,
-        'Magnitude': Magnitude,
-        'ApplyFilterbank': ApplyFilterbank,
-        'MagnitudeToDecibel': MagnitudeToDecibel,
-    }
-    model_path = os.path.join(dirname, "model", "audio_prediction.h5")
-    audio_prediction = tf.keras.models.load_model(model_path, custom_objects=custom_objects)
-    
     #classify sound event
     rate, audio, audio_batch = audio_preprocess(wav_file)
     prediction = audio_prediction.predict(audio_batch)
@@ -76,6 +76,8 @@ def audio_preprocess(wav_file):
     wav = wav.reshape(-1,1)
     if wav.shape[0] < 40000:
         wav = np.pad(wav, ((0, 40000-wav.shape[0]), (0,0)), mode="constant", constant_values = 0)
-        wav = wav.reshape(-1, 1)
-        wav_batch = np.expand_dims(wav, axis=0)
+    elif wav.shape[0] > 40000:
+        wav = wav[:40000]
+    wav_batch = np.expand_dims(wav, axis=0)
+
     return rate, wav, wav_batch
