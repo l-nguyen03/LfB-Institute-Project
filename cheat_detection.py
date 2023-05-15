@@ -1,7 +1,11 @@
 import numpy as np
 import cv2 as cv
 from faceRecognition import camera_monitor
+import time
+import os
+import threading
 
+dir_path = os.path.dirname(os.path.abspath(__file__))
 
 '''
 The function captures a frame using OpenCV and pass
@@ -15,27 +19,25 @@ void
 void
 '''
 def face_monitor():
-    cap = cv.VideoCapture(0)
-    if not cap.isOpened():
-        print("Error opening video capture")
-        return
-    
     ret, frame = cap.read()
-    cheat = camera_monitor(frame)
-    if cheat: 
-        # Define the codec and create VideoWriter object
-        fourcc = cv.VideoWriter_fourcc(*'XVID')
-        out = cv.VideoWriter('output.avi', fourcc, 20.0, frame.shape[:2][::-1])
+    if not ret:
+        print("Can't receive frame!")
+    else:
+        cheat, frame, date_time = camera_monitor(frame)
+        if cheat: 
+            cv.imwrite(os.path.join(dir_path, "frame_evidence", f"{date_time}.jpg"), frame)
 
-        # Vertically flip the frame
-        frame = cv.flip(frame, 1)
 
-        # Write the flipped frame
-        out.write(frame)
-        out.release()
 
-    cap.release()
-    cv.destroyAllWindows()
+'''
+This function defines a thread that calls face_monitor every 30 seconds
+until stop_event is set. 
+'''
+def face_monitor_thread(stop_event):
+    while not stop_event.is_set():
+        face_monitor()
+        stop_event.wait(10)
+
 
 
 '''
@@ -76,11 +78,19 @@ def prepare_message():
 
 
 if __name__ == "__main__":
-
-    while True:
-        try:
-            face_monitor()
-            
-        except KeyboardInterrupt:
-            break
-
+    stop_event = threading.Event()
+    cap = cv.VideoCapture(0)
+    time.sleep(2)
+    if not cap.isOpened():
+        print("Error opening video capture")
+    else:
+        threading.Thread(target=face_monitor_thread, args=(stop_event,)).start()
+        while True: 
+            try:
+                audio_detection()
+            except KeyboardInterrupt:
+                stop_event.set()
+                break 
+    
+    cap.release()
+    cv.destroyAllWindows()

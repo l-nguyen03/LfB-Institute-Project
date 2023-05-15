@@ -3,6 +3,7 @@ import cv2 as cv
 import face_recognition as fr
 import numpy as np
 import time
+from datetime import datetime
 import os
 
 dir_path = os.path.dirname(os.path.abspath(__file__))
@@ -37,9 +38,12 @@ img : Frame captured by using cv.capture
 
 <Return> : <Return Type>
 cheat or not? : bool 
+frame as evidence : NumPy Array
+date and time of the behaviour
 '''
 def camera_monitor(img):
     unknown_face_start_time = None
+    
 
     # Convert the image to grayscale for better face detection
     gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
@@ -48,10 +52,14 @@ def camera_monitor(img):
     #Check if more faces or no face present
     if len(faces) > 1:
         print("More than one face detected!")
-        return True
+        unknown_face_start_time = time.time()
+        unknown_face_start_time = datetime.fromtimestamp(unknown_face_start_time)
+        return True, img, unknown_face_start_time
     elif len(faces) == 0: 
         print("Face out of frame!")
-        return True
+        unknown_face_start_time = time.time()
+        unknown_face_start_time = datetime.fromtimestamp(unknown_face_start_time)
+        return True, img, unknown_face_start_time
 
     #If only one face present then proceed to identity check
     for face in faces:
@@ -84,6 +92,7 @@ def camera_monitor(img):
 
             if name == "Unknown":
                 unknown_face_start_time = time.time()
+                unknown_face_start_time = datetime.fromtimestamp(unknown_face_start_time)
 
         # Draw a bounding box around the face and write the name below it
         cv.putText(img, f"{name} ({accuracy}%)", (x, y - 10), cv.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 2)
@@ -93,12 +102,9 @@ def camera_monitor(img):
             x, y = landmarks.part(n).x, landmarks.part(n).y
             cv.circle(img, (x, y), 2, (0, 255, 0), -1)
 
-    # Display the image with faces and landmarks
-    cv.imshow("Camera", img)
-
     # Print messages
     if unknown_face_start_time is not None:
         print("Unknown face")
-        return True
+        return True, img, unknown_face_start_time
     
-    return False
+    return False, img, unknown_face_start_time
