@@ -36,7 +36,7 @@ until stop_event is set.
 def face_monitor_thread(stop_event):
     while not stop_event.is_set():
         face_monitor()
-        stop_event.wait(10)
+        stop_event.wait(5)
 
 
 
