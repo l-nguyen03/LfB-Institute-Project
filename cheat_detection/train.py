@@ -34,7 +34,7 @@ data_train, data_val, train_label, val_label = train_test_split(wav_paths,
 #Stop fitting when val_loss isn't improved after 10 epochs
 early_stoppping = tf.keras.callbacks.EarlyStopping(monitor = "val_loss", patience=10, verbose=1, mode="min")
 
-"""
+
 #5 Folds Cross Validation
 
 kfold = KFold(n_splits=5, shuffle=True, random_state=13)
@@ -50,15 +50,15 @@ for fold, (train_indices, val_indices) in enumerate(kfold.split(data_train, trai
     model = Conv2D(num_classes, sample_rate, duration)
     csv_logger = tf.keras.callbacks.CSVLogger(csv_path, append=False)
     model.fit(tg, validation_data=vg, epochs=70, verbose=1, callbacks=[early_stoppping, csv_logger])
-"""
 
+'''
 #train model and save the best performing one. 
 train_data = DataGenerator(data_train,train_label, sample_rate, duration, num_classes, batch_size=batch_size)
 val_data = DataGenerator(data_val, val_label, sample_rate, duration, num_classes, batch_size=batch_size)
 
 #Callback to log training history. 
 csv_path = f"{log_dir}/train_history.csv"
-csv_logger = tf.keras.callbacks.CSVLogger(csv_path, append=True)
+csv_logger = tf.keras.callbacks.CSVLogger(csv_path, append=False)
 
 model = Conv2D(num_classes, sample_rate, duration)
 
@@ -66,3 +66,4 @@ model = Conv2D(num_classes, sample_rate, duration)
 model_checkpoint = tf.keras.callbacks.ModelCheckpoint(f"model/audio_prediction.h5", monitor="val_loss", save_best_only=True, 
                                                       save_weights_only=False, mode="auto", save_freq="epoch", verbose=1)
 model.fit(train_data, validation_data=val_data, epochs=100, verbose=1, callbacks=[early_stoppping, csv_logger, model_checkpoint])
+'''

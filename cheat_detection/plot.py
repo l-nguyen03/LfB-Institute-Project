@@ -128,9 +128,38 @@ def plot_mel_spectrogram(wav_dir):
     plt.savefig(output_file)
     plt.show()
 
+def plot_mfcc(wav_dir):
+    class_names = [subdir for subdir in os.listdir(wav_dir) if ".DS_Store" not in subdir]
+    num_rows = 1
+    num_cols = 5
+    # Create the figure and subplots
+    fig, axes = plt.subplots(nrows=num_rows, ncols=num_cols, figsize=(12, 8))
+    for i, class_name in enumerate(class_names):
+        subdir_path = os.path.join(wav_dir, class_name)
+        wav_files = [file for file in os.listdir(subdir_path) if file.endswith(".wav")]
+        selected_file = random.choice(wav_files)
+        selected_file_path = os.path.join(subdir_path, selected_file)
+        wav, sample_rate = librosa.load(selected_file_path)
+        mfccs = librosa.feature.mfcc(y=wav, sr=sample_rate, n_mfcc=20)
+
+        #plot the mfccs
+        ax = axes[i]
+        ax.set_title(class_name)
+        ax.set_xlabel("Time")
+        ax.set_ylabel("Index of Coefficients")
+        ax.set_xticks([])
+        ax.set_yticks([])
+        img = librosa.display.specshow(mfccs, ax=ax)
+        fig.colorbar(img, ax=ax)
+    
+    plt.tight_layout()
+    output_file = os.path.join(dirname, "plot", "mfccs.png")
+    plt.savefig(output_file)
+    plt.show()
 
 if __name__ == "__main__":
-    plot_learning_curve_fold(log_dir)
-    plot_learning_curve(os.path.join(log_dir, "train_history.csv"))
-    plot_audio_signal(os.path.join(dirname, "test"))
-    plot_mel_spectrogram(os.path.join(dirname, "test"))
+    #plot_learning_curve_fold(log_dir)
+    #plot_learning_curve(os.path.join(log_dir, "train_history.csv"))
+    #plot_audio_signal(os.path.join(dirname, "test"))
+    #plot_mel_spectrogram(os.path.join(dirname, "test"))
+    plot_mfcc(os.path.join(dirname, "test"))
