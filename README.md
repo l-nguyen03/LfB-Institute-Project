@@ -1,8 +1,3 @@
-# LfB-Institute-Project
-Implementation of a simple cheat detection system using face regconition techniques and audio processing. 
-
-## How to Install 
-<u> **Prerequisites:** </u> You need an personal access token when you clone the repo, follow this [link](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token) to know how. I recommend also you [install git credential manager](https://github.com/git-ecosystem/git-credential-manager/blob/release/docs/install.md) so you don't have to enter this long ass token everytime you want to do something with the remote repo.
 
 Go to your local directory that you guys want save the project in the terminal and enter this line: 
 ```
@@ -12,9 +7,7 @@ The repo here **_include the dockerfile also_** so that we all have the same doc
 
 **_If you are using MacOS with Apple Silicon then go to the branch main-arm64 and clone this branch instead._**
 
-## Example on how to use Git and GitHub for collaboration on the project:
 
-**_Example: Ali wants to implement face comparison_**
 
 1. Ali will clone the repository to his local machine using the git clone command. This will create a local copy of the repository on his machine.
 2. He then creates a branch for his functionality with ``git branch branch-name`` followed by name of the functionality, ex. 
@@ -46,3 +39,4 @@ git branch face_regconition.
 13. ``git log`` - Show the commit history.
 14. ``git diff <file>`` - Show the difference between the working directory and the last commit for the specified file.
 15. ``git fetch`` - Fetch changes from the remote repository without merging them.
+
