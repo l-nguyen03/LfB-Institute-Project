@@ -11,4 +11,7 @@ dependencies:
       - librosa
       - kapre==0.3.7
       - pyaudio
+      - opencv-python
+      - dlib
+      - face_recognition
 
