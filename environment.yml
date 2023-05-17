@@ -1,0 +1,17 @@
+name: cheat-detection
+channels:
+  - defaults
+dependencies:
+  - python=3.9
+  - tensorflow
+  - pandas 
+  - matplotlib
+  - pip
+  - pip:
+      - librosa
+      - kapre==0.3.7
+      - pyaudio
+      - opencv-python
+      - dlib
+      - face_recognition
+
