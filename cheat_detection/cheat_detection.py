@@ -9,6 +9,7 @@ from faceRecognition import camera_monitor
 import time
 import os
 import threading
+from queue import Queue
 
 dir_path = os.path.dirname(os.path.abspath(__file__))
 
@@ -50,23 +51,25 @@ def face_monitor_thread(stop_event):
         stop_event.wait(5)
 
 '''
-Record the microphone's input every 2.5 seconds, save it as a wavfile and 
-pass this file to the CNN using predict_audio for prediction. When CNN predicts the audio 
-as cheating behaviour, it will print to the console and save this audio for evidence in a 
-directory called audio_evidence.
-
-<Argument Name>: <Argument Type>
-None
-<Return Variable>: <Return Type>
-None
+Process the audio stored in audio_queue and use the CNN to predict.
 '''
-def audio_detection(num_chunks):
-    stream.start_stream()
-    #start recording
-    data = stream.read(CHUNK*num_chunks)
-    stream.stop_stream()
-    recorded_audio = np.frombuffer(data, dtype=np.int16)
-    predict_audio(recorded_audio, SAMPLE_RATE)
+def audio_detection(stop_event, audio_queue):
+    while not stop_event.is_set():
+        if not audio_queue.empty():
+            recorded_audio = audio_queue.get()
+            predict_audio(recorded_audio, SAMPLE_RATE)
+
+'''
+This function defines a thread that record the microphone's input and save it in a queue
+until stop_event is set. 
+'''
+def audio_recording(stop_event, num_chunks):
+    while not stop_event.is_set():
+        stream.start_stream()
+        data = stream.read(CHUNK*num_chunks, exception_on_overflow=False)
+        stream.stop_stream()
+        recorded_audio = np.frombuffer(data, dtype=np.int16)
+        audio_queue.put(recorded_audio)
 
 '''
 Describe concisely about what the function does and specify:
@@ -93,14 +96,17 @@ if __name__ == "__main__":
     stop_event = threading.Event()
     cap = cv.VideoCapture(0)
     time.sleep(2)
+    audio_queue = Queue()
     if not cap.isOpened():
         print("Error opening video capture")
     else:
         threading.Thread(target=face_monitor_thread, args=(stop_event,)).start()
+        threading.Thread(target=audio_recording, args=(stop_event, num_chunks)).start()
+        threading.Thread(target=audio_detection, args=(stop_event, audio_queue)).start()
         #Loop unitl interrupt with Ctrl+C
         while True:
             try:
-                audio_detection(num_chunks)
+                time.sleep(1)
             except KeyboardInterrupt:
                 stop_event.set()
                 stream.close()
