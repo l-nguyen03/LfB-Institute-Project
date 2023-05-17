@@ -1,3 +1,4 @@
+
 import pyaudio
 import numpy as np
 from scipy.io import wavfile
@@ -8,6 +9,7 @@ from faceRecognition import camera_monitor
 import time
 import os
 import threading
+
 dir_path = os.path.dirname(os.path.abspath(__file__))
 
 SAMPLE_RATE = 16000
@@ -15,6 +17,7 @@ DURATION = 3
 CHUNK = 1024
 FORMAT = pyaudio.paInt16
 CHANNELS = 1
+
 
 '''
 The function captures a frame using OpenCV and pass
@@ -26,6 +29,7 @@ void
 
 <Return Variable>: <Return Type>
 void
+
 '''
 def face_monitor():
     ret, frame = cap.read()
@@ -77,6 +81,7 @@ def prepare_message():
 
 
 if __name__ == "__main__":
+
     audio = pyaudio.PyAudio()
     #start stream
     stream = audio.open(format=FORMAT,
@@ -90,7 +95,6 @@ if __name__ == "__main__":
     time.sleep(2)
     if not cap.isOpened():
         print("Error opening video capture")
-
     else:
         threading.Thread(target=face_monitor_thread, args=(stop_event,)).start()
         #Loop unitl interrupt with Ctrl+C
