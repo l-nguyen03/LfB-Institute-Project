@@ -18,7 +18,7 @@ Dataset are 1486 wavefiles with duration of 2.5 seconds collected from multiple 
 ## Model performance
 Model performed well during crossvalidation and during training. The model also achieved 99% precision and recall score and 95% for accuracy on a seperate never-before-seen test set. Run evaluate.py to see the scores. 
 ### Learning Curve: 
-![Alt Text](./cheat_detection/plot/learning_curve.png){:width="300px"}
+![Alt Text](./cheat_detection/plot/leaning_curve.png)
 
 ## Citation 
 1. [Speech Processing for Machine Learning: Filter banks, Mel-Frequency Cepstral Coefficients (MFCCs) and What's In-Between](https://haythamfayek.com/2016/04/21/speech-processing-for-machine-learning.html)
