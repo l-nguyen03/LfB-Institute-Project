@@ -7,8 +7,11 @@ from scipy.io import wavfile
 
 CHEAT = ["Computer keyboard", "Speech", "Whispering"]
 NON_CHEAT = ["Working", "Traffic noise, roadway noise"]
+json_mapping_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "json_mapping.json")
+evidence_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "audio_evidence")
 
-with open("json_mapping.json", "r") as f: 
+
+with open(json_mapping_path, "r") as f: 
     map = json.load(f)
 
 script_path = os.path.abspath(__file__)
@@ -24,7 +27,10 @@ custom_objects = {
 }
 model_path = os.path.join(dirname, "model", "audio_prediction.h5")
     
-audio_prediction = tf.keras.models.load_model(model_path, custom_objects=custom_objects)
+audio_prediction = tf.keras.models.load_model(model_path, custom_objects=custom_objects, compile=False)
+audio_prediction.compile(optimizer='adam',
+                  loss='categorical_crossentropy',
+                  metrics=['accuracy'])
     
 """
 Predict whether the recorded audio reflect cheating
@@ -47,11 +53,11 @@ def predict_audio(wav, rate):
                 print(f"CHEATING DETECTED: {category}")
                 evidence_num = 1
                 filename = f"evidence_{evidence_num}.wav"
-                filepath = os.path.join("audio_evidence", filename)
+                filepath = os.path.join(evidence_path, filename)
                 while os.path.exists(filepath):
                     evidence_num += 1
                     filename = f"evidence_{evidence_num}.wav"
-                    filepath = os.path.join("audio_evidence", filename)
+                    filepath = os.path.join(evidence_path, filename)
                 wavfile.write(filepath, rate, audio)
                 return False
             else: 

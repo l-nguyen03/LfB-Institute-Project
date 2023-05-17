@@ -17,11 +17,18 @@ for dirname in dirnames:
     wav_files.sort()
     random.seed(29)
     random.shuffle(wav_files)
-    train_split = int(0.8 * len(wav_files))
+    train_split = int(0.65 * len(wav_files))
+    val_split = int(0.8 * len(wav_files))
+
     train_wav = wav_files[:train_split]
-    test_wav = wav_files[train_split:]
+    val_wav = wav_files[train_split:val_split]
+    test_wav = wav_files[val_split:]
     for wav_file in train_wav:
         dist_dir = f"{src_dir}/train/{dirname}"
+        os.makedirs(dist_dir, exist_ok=True)
+        shutil.copy(f"{dataset_path}/{dirname}/{wav_file}", dist_dir)
+    for wav_file in val_wav:
+        dist_dir = f"{src_dir}/val/{dirname}"
         os.makedirs(dist_dir, exist_ok=True)
         shutil.copy(f"{dataset_path}/{dirname}/{wav_file}", dist_dir)
     for wav_file in test_wav:

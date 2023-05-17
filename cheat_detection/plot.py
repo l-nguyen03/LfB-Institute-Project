@@ -11,20 +11,6 @@ dirname = os.path.dirname(script_path)
 log_dir = os.path.join(dirname, "logs")
 
 """
-Plot learning curves for each fold of cross validation 
-and save the image in a directory called plot
-
-<Argument> : <Argument Type>
-src_dir :(string) path to source directory
-"""
-def plot_learning_curve_fold(src_dir):
-    filenames = [filename for filename in os.listdir(src_dir) if "cross" in filename]
-    for fold, filename in enumerate(filenames):
-        filepath = os.path.join(src_dir, filename)
-        plot_learning_curve(filepath, f"learning_curve_fold_{fold+1}.png")
-
-
-"""
 Plot learning curves for a given csv file 
 and save the image in a directory called plot
 
@@ -158,8 +144,7 @@ def plot_mfcc(wav_dir):
     plt.show()
 
 if __name__ == "__main__":
-    #plot_learning_curve_fold(log_dir)
-    #plot_learning_curve(os.path.join(log_dir, "train_history.csv"))
-    #plot_audio_signal(os.path.join(dirname, "test"))
-    #plot_mel_spectrogram(os.path.join(dirname, "test"))
+    plot_learning_curve(os.path.join(log_dir, "train_history.csv"))
+    plot_audio_signal(os.path.join(dirname, "test"))
+    plot_mel_spectrogram(os.path.join(dirname, "test"))
     plot_mfcc(os.path.join(dirname, "test"))
