@@ -9,6 +9,8 @@ CHEAT = ["Computer keyboard", "Speech", "Whispering"]
 NON_CHEAT = ["Working", "Traffic noise, roadway noise"]
 json_mapping_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "json_mapping.json")
 evidence_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "audio_evidence")
+if not os.path.exists(evidence_path):
+    os.makedirs(evidence_path)
 
 
 with open(json_mapping_path, "r") as f: 
