@@ -144,7 +144,6 @@ def plot_mfcc(wav_dir):
     plt.show()
 
 if __name__ == "__main__":
-    #plot_learning_curve(os.path.join(log_dir, "train_history.csv"))
+    plot_learning_curve(os.path.join(log_dir, "train_history.csv"))
     plot_audio_signal(os.path.join(dirname, "test"))
     plot_mel_spectrogram(os.path.join(dirname, "test"))
-    #plot_mfcc(os.path.join(dirname, "test"))

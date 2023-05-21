@@ -51,7 +51,8 @@ def face_monitor_thread(stop_event):
         stop_event.wait(5)
 
 '''
-Process the audio stored in audio_queue and use the CNN to predict.
+Process the audio stored in audio_queue and use the CNN to predict until 
+stop_event is set
 '''
 def audio_detection(stop_event, audio_queue):
     while not stop_event.is_set():
@@ -70,6 +71,7 @@ def audio_recording(stop_event, num_chunks):
         stream.stop_stream()
         recorded_audio = np.frombuffer(data, dtype=np.int16)
         audio_queue.put(recorded_audio)
+        stop_event.wait(1)
 
 '''
 Describe concisely about what the function does and specify:

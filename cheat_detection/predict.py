@@ -1,12 +1,13 @@
 import tensorflow as tf
+import librosa
 from kapre import STFT, Magnitude, ApplyFilterbank, MagnitudeToDecibel, LogmelToMFCC
 import numpy as np
 import os
 import json
-from scipy.io import wavfile
+import soundfile as sf
 
 CHEAT = ["Computer keyboard", "Speech", "Whispering"]
-NON_CHEAT = ["Working", "Traffic noise, roadway noise"]
+NON_CHEAT = ["Working", "Siren"]
 json_mapping_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "json_mapping.json")
 evidence_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "audio_evidence")
 if not os.path.exists(evidence_path):
@@ -60,7 +61,7 @@ def predict_audio(wav, rate):
                     evidence_num += 1
                     filename = f"evidence_{evidence_num}.wav"
                     filepath = os.path.join(evidence_path, filename)
-                wavfile.write(filepath, rate, audio)
+                sf.write(filepath, audio, rate, format="mp3")
                 return False
             else: 
                 print(category)
@@ -80,7 +81,6 @@ wav : reshaped wavefile of dimension (40000,1)
 wav_batch : reshaped wavefile with extra batch dimension (40000, 1, 0)
 """
 def audio_preprocess(wav):
-    #rate, wav = wavfile.read(wav_file)
     wav = wav.reshape(-1,1)
     if wav.shape[0] < 40000:
         wav = np.pad(wav, ((0, 40000-wav.shape[0]), (0,0)), mode="constant", constant_values = 0)

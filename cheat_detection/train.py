@@ -42,6 +42,7 @@ csv_path = f"{log_dir}/train_history.csv"
 csv_logger = tf.keras.callbacks.CSVLogger(csv_path, append=False)
 
 model = Conv2D(num_classes, sample_rate, duration)
+model.summary()
 
 #Callback to save best performing weights.
 model_path = os.path.join(dirname, "model", "audio_prediction.h5")

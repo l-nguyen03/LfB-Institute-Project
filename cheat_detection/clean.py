@@ -8,7 +8,7 @@ import json
 script_path = os.path.abspath(__file__)
 dirname = os.path.dirname(script_path)
 
-f"""
+"""
 get all the wavfile's path in a given directory 
 
 <Argument> : <Argument Type>
@@ -87,7 +87,7 @@ def shift_wav(src_dir, shift_range):
 
 
 if __name__ == "__main__":
-    src_dirs = ["/Users/nptlinh/Desktop/LfB-Institute-Project/dataset/train_cleaned", 
-                "/Users/nptlinh/Desktop/LfB-Institute-Project/dataset/valid_cleaned"]
-    for src_dir in src_dirs:
-        shift_wav(src_dir, 1)
+    """
+    #src_dir = "/Users/nptlinh/Desktop/LfB-Institute-Project/cheat_detection/dataset/Working"
+    shift_wav(src_dir, 1)
+    """
