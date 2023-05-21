@@ -53,7 +53,7 @@ def get_labels(src_dir, wav_paths=None):
             with open("json_mapping.json", "w") as f:
                 json.dump(label_mapping, f)
     if wav_paths is not None:
-        labels = [os.path.split(path)[0].split('/')[-1].replace("_cleaned", "") for path in wav_paths]
+        labels = [os.path.split(path)[0].split(os.path.sep)[-1] for path in wav_paths]
         labels = label_encoder.transform(labels)
         return [num_classes, labels]
 

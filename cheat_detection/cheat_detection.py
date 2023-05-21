@@ -1,7 +1,6 @@
 
 import pyaudio
 import numpy as np
-from scipy.io import wavfile
 from predict import predict_audio
 import time
 import cv2 as cv

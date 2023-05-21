@@ -1,17 +1,97 @@
-name: cheat-detection
+name: lfb-project
 channels:
   - defaults
 dependencies:
-  - python=3.9
-  - tensorflow
-  - pandas 
-  - matplotlib
+  - ca-certificates=
+  - libcxx
+  - libffi
+  - ncurses
+  - openssl
   - pip
+  - python=3.9.16
+  - readline=8.2
+  - setuptools=66.0.0
+  - sqlite
+  - tk
+  - wheel
+  - xz
+  - zlib
   - pip:
-      - librosa
-      - kapre==0.3.7
-      - pyaudio
-      - opencv-python
+      - absl-py
+      - appdirs
+      - astunparse
+      - audioread
+      - cachetools
+      - certifi
+      - cffi
+      - charset-normalizer
+      - click
+      - cmake
+      - contourpy
+      - cycler
+      - decorator
       - dlib
-      - face_recognition
+      - face-recognition
+      - face-recognition-models
+      - flatbuffers
+      - fonttools
+      - gast
+      - google-auth
+      - google-auth-oauthlib
+      - google-pasta
+      - grpcio
+      - h5py
+      - idna
+      - importlib-metadata
+      - importlib-resources
+      - joblib
+      - kapre==0.3.7
+      - keras
+      - kiwisolver
+      - lazy-loader
+      - libclang
+      - librosa
+      - llvmlite
+      - markdown
+      - markupsafe
+      - matplotlib
+      - msgpack
+      - numba
+      - numpy
+      - oauthlib
+      - opencv-python
+      - opt-einsum
+      - packaging
+      - pandas
+      - pillow
+      - pooch
+      - protobuf
+      - pyasn1
+      - pyasn1-modules
+      - pyaudio
+      - pycparser
+      - pyparsing
+      - python-dateutil
+      - pytz
+      - requests
+      - requests-oauthlib
+      - rsa
+      - scikit-learn
+      - scipy
+      - six
+      - soundfile
+      - soxr
+      - tensorboard
+      - tensorboard-data-server
+      - tensorflow
+      - tensorflow-estimator
+      - tensorflow-macos
+      - termcolor
+      - threadpoolctl
+      - typing-extensions
+      - tzdata
+      - urllib3
+      - werkzeug
+      - wrapt
+      - zipp
 
