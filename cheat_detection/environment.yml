@@ -194,4 +194,4 @@ dependencies:
       - threadpoolctl==3.1.0
       - tqdm==4.65.0
       - urllib3==2.0.2
-prefix: /Users/nptlinh/miniconda3/envs/institute-project
+
