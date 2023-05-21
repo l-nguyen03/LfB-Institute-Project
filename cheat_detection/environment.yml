@@ -2,15 +2,15 @@ name: lfb-project
 channels:
   - defaults
 dependencies:
-  - ca-certificates=
+  - ca-certificates
   - libcxx
   - libffi
   - ncurses
   - openssl
   - pip
   - python=3.9.16
-  - readline=8.2
-  - setuptools=66.0.0
+  - readline
+  - setuptools
   - sqlite
   - tk
   - wheel
