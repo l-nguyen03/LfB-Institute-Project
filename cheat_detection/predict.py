@@ -55,11 +55,11 @@ def predict_audio(wav, rate):
             if category in CHEAT:
                 print(f"CHEATING DETECTED: {category}")
                 evidence_num = 1
-                filename = f"evidence_{evidence_num}.wav"
+                filename = f"evidence_{evidence_num}.mp3"
                 filepath = os.path.join(evidence_path, filename)
                 while os.path.exists(filepath):
                     evidence_num += 1
-                    filename = f"evidence_{evidence_num}.wav"
+                    filename = f"evidence_{evidence_num}.mp3"
                     filepath = os.path.join(evidence_path, filename)
                 sf.write(filepath, audio, rate, format="mp3")
                 return False

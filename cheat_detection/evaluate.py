@@ -1,5 +1,5 @@
 import tensorflow as tf
-from kapre import STFT, Magnitude, ApplyFilterbank, MagnitudeToDecibel, LogmelToMFCC
+from kapre import STFT, Magnitude, ApplyFilterbank, MagnitudeToDecibel
 import numpy as np
 import os
 from data_generator import DataGenerator
@@ -15,7 +15,6 @@ custom_objects = {
     'Magnitude': Magnitude,
     'ApplyFilterbank': ApplyFilterbank,
     'MagnitudeToDecibel': MagnitudeToDecibel,
-    'LogmelToMFCC': LogmelToMFCC
 }
 model_path = os.path.join(dirname, "model", "audio_prediction.h5")
 audio_prediction = tf.keras.models.load_model(model_path, custom_objects=custom_objects)
