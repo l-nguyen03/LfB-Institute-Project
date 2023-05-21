@@ -1,11 +1,13 @@
 
 # Face Detection, Face Recognition, Audio Detection and Classification to determine cheating behaviour using CNN and pretrained model
- 
+# Face Detection, Face Recognition
+## Idea
+Use the library dlib to extract faces from a frame recorded by OpenCV and use face_recognition library to extract facial encodings from both the frame and a given student's photo. Compare this facial encodings to detect cheating behaviour. 
+
+# Audio Detection and Classification
 ## Idea 
 
 Transform audio signals with duration of 2.5 seconds from 5 categories: Computer Keyboard, Working, Whispering, Speech, Traffic noise and roadway noise into melspectrogram by applying STFT on overlapping windows, typically 25 ms with 10 ms stride, take the Power Spectrum and apply Mel-filterbanks. This melspectrogram is fed into the CNN to learn features and result in a model that can classify effectively this sound events. The melspectrogram are done by a package called Kapre as a direct input layer of the CNN.
-
-<<<<<<< HEAD
 ![Alt Text](./cheat_detection/plot/Diagramm.png)
 
 ## Dataset
