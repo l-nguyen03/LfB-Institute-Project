@@ -1,5 +1,5 @@
 
-#Face Detection, Face Recognition, Audio Detection and Classification to determine cheating behaviour using CNN and pretrained model
+# Face Detection, Face Recognition, Audio Detection and Classification to determine cheating behaviour using CNN and pretrained model
  
 ## Idea 
 
@@ -14,8 +14,6 @@ Dataset are 1486 wavefiles with duration of 2.5 seconds collected from multiple 
 ![Alt Text](./cheat_detection/plot/representative_wavesignals.png)
 ### Melspectrograms:
 ![Alt Text](./cheat_detection/plot/mel_spectrogram.png)
-### MFCCs:
-![Alt Text](./cheat_detection/plot/mfccs.png)
 
 ## Model performance
 Model performed well during crossvalidation and during training. The model also achieved 99% precision and recall score and 95% for accuracy on a seperate never-before-seen test set. Run evaluate.py to see the scores. 
