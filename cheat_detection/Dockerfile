@@ -6,7 +6,7 @@ WORKDIR /cheat-detection
 ENV PATH="/root/miniconda3/bin:${PATH}"
 ARG PATH="/root/miniconda3/bin:${PATH}"
 
-# Copy requirements.txt to the container
+# Copy require files to the container
 COPY requirements.txt /cheat-detection/requirements.txt
 COPY cheat_detection.py /cheat-detection/cheat_detection.py
 COPY faceRecognition.py /cheat-detection/faceRecognition.py
