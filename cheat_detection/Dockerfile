@@ -27,6 +27,18 @@ RUN apt-get update && \
         ffmpeg \
         && rm -rf /var/lib/apt/lists/*
 
+# Install required dependencies for PyAudio
+RUN apt-get update && \
+    apt-get install -y \
+        wget \
+        portaudio19-dev \
+        libsndfile1 \
+        cmake \
+        build-essential \
+        libopenblas-dev \
+        ffmpeg \
+        && rm -rf /var/lib/apt/lists/*
+
 RUN wget \
     https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh \
     && mkdir /root/.conda \
@@ -34,12 +46,13 @@ RUN wget \
     && rm -f Miniconda3-latest-Linux-x86_64.sh
 
 # Create a new Python 3.9 environment named "cheat_detection"
-RUN conda create -n cheat_detection python=3.9
+RUN conda create -y -n cheat_detection python=3.9
 
 RUN echo "source /root/miniconda3/etc/profile.d/conda.sh" >> ~/.bashrc && \
-    echo "conda activate cheat_detection" >> ~/.bashrc
-
-# Install the Python dependencies in the cheat_detection environment
-RUN /bin/bash -c "source /root/miniconda3/etc/profile.d/conda.sh && \
+    echo "conda activate cheat_detection" >> ~/.bashrc && \
+    /bin/bash -c "source /root/miniconda3/etc/profile.d/conda.sh && \
     conda activate cheat_detection && \
     pip install --no-cache-dir -r requirements.txt"
+
+# Set the entry point to start a shell with the environment activated
+ENTRYPOINT [ "/bin/bash", "-c", "source /root/miniconda3/etc/profile.d/conda.sh && conda activate cheat_detection && /bin/bash" ]
