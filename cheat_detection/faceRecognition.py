@@ -5,11 +5,19 @@ import numpy as np
 import time
 from datetime import datetime
 import os
+import zmq
+
+context = zmq.Context()
+#  Socket to talk to server
+print("Connecting to hello world server...")
+socket1 = context.socket(zmq.REQ)
+socket1.connect("tcp://localhost:5555")
+
 
 dir_path = os.path.dirname(os.path.abspath(__file__))
 model_path = os.path.join(dir_path, "shape_predictor_81_face_landmarks.dat")
 jpg_dir_path = os.path.join(dir_path, "faces")
-
+message = ""
 
 # Initialize face detector and shape predictor
 detector = dlib.get_frontal_face_detector()
@@ -51,12 +59,14 @@ def camera_monitor(img):
 
     #Check if more faces or no face present
     if len(faces) > 1:
-        print("More than one face detected!")
+        message = "More than one face detected!"
+        socket1.send_string(message)
         unknown_face_start_time = time.time()
         unknown_face_start_time = datetime.fromtimestamp(unknown_face_start_time)
         return True, img, unknown_face_start_time
     elif len(faces) == 0: 
-        print("Face out of frame!")
+        message = "Face out of frame!"
+        socket1.send_string(message)
         unknown_face_start_time = time.time()
         unknown_face_start_time = datetime.fromtimestamp(unknown_face_start_time)
         return True, img, unknown_face_start_time
@@ -104,7 +114,9 @@ def camera_monitor(img):
 
     # Print messages
     if unknown_face_start_time is not None:
-        print("Unknown face")
+        message = "Unknown face"
+        socket1.send_string(message)
         return True, img, unknown_face_start_time
     
     return False, img, unknown_face_start_time
+
