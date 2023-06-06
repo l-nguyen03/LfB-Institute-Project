@@ -5,6 +5,14 @@ import numpy as np
 import os
 import json
 import soundfile as sf
+import zmq
+
+context = zmq.Context()
+#  Socket to talk to server
+print("Connecting to hello world server...")
+socket2 = context.socket(zmq.REQ)
+socket2.connect("tcp://localhost:5556")
+
 
 CHEAT = ["Computer keyboard", "Speech", "Whispering"]
 NON_CHEAT = ["Working", "Siren"]
@@ -13,28 +21,27 @@ evidence_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "audio_
 if not os.path.exists(evidence_path):
     os.makedirs(evidence_path)
 
-
-with open(json_mapping_path, "r") as f: 
+with open(json_mapping_path, "r") as f:
     map = json.load(f)
 
 script_path = os.path.abspath(__file__)
 dirname = os.path.dirname(script_path)
 
-#Load model
+# Load model
 custom_objects = {
     'STFT': STFT,
     'Magnitude': Magnitude,
     'ApplyFilterbank': ApplyFilterbank,
     'MagnitudeToDecibel': MagnitudeToDecibel,
-    'LogmelToMFCC' : LogmelToMFCC
+    'LogmelToMFCC': LogmelToMFCC
 }
 model_path = os.path.join(dirname, "model", "audio_prediction.h5")
-    
+
 audio_prediction = tf.keras.models.load_model(model_path, custom_objects=custom_objects, compile=False)
 audio_prediction.compile(optimizer='adam',
-                  loss='categorical_crossentropy',
-                  metrics=['accuracy'])
-    
+                         loss='categorical_crossentropy',
+                         metrics=['accuracy'])
+
 """
 Predict whether the recorded audio reflect cheating
 
@@ -44,16 +51,17 @@ wav_file : (string) path to wave file.
 <Return Var> : <Return Type>
 _ : (Boolean) True for non-cheat and False for cheating.
 """
-def predict_audio(wav, rate):
 
-    #classify sound event
+
+def predict_audio(wav, rate):
+    # classify sound event
     audio, audio_batch = audio_preprocess(wav)
     prediction = audio_prediction.predict(audio_batch)
     predicted_label = np.argmax(prediction, axis=-1)
     for category, index in map.items():
         if index == predicted_label:
             if category in CHEAT:
-                print(f"CHEATING DETECTED: {category}")
+                socket2.send_string(f"CHEATING DETECTED: {category}")
                 evidence_num = 1
                 filename = f"evidence_{evidence_num}.mp3"
                 filepath = os.path.join(evidence_path, filename)
@@ -63,9 +71,9 @@ def predict_audio(wav, rate):
                     filepath = os.path.join(evidence_path, filename)
                 sf.write(filepath, audio, rate, format="mp3")
                 return False
-            else: 
+            else:
                 print(category)
-                return True 
+                return True
 
 
 """
@@ -80,10 +88,12 @@ rate : sampling rate of audio
 wav : reshaped wavefile of dimension (40000,1)
 wav_batch : reshaped wavefile with extra batch dimension (40000, 1, 0)
 """
+
+
 def audio_preprocess(wav):
-    wav = wav.reshape(-1,1)
+    wav = wav.reshape(-1, 1)
     if wav.shape[0] < 40000:
-        wav = np.pad(wav, ((0, 40000-wav.shape[0]), (0,0)), mode="constant", constant_values = 0)
+        wav = np.pad(wav, ((0, 40000 - wav.shape[0]), (0, 0)), mode="constant", constant_values=0)
     elif wav.shape[0] > 40000:
         wav = wav[:40000]
     wav_batch = np.expand_dims(wav, axis=0)
