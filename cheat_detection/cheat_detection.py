@@ -10,6 +10,8 @@ import os
 import threading
 from queue import Queue
 
+
+
 dir_path = os.path.dirname(os.path.abspath(__file__))
 
 SAMPLE_RATE = 16000
@@ -113,6 +115,7 @@ if __name__ == "__main__":
                 stream.close()
                 audio.terminate()
                 break
+
 
 cap.release()
 cv.destroyAllWindows()
