@@ -1,101 +1,71 @@
-import tensorflow as tf
-import librosa
-from kapre import STFT, Magnitude, ApplyFilterbank, MagnitudeToDecibel, LogmelToMFCC
+import dlib
+import cv2 as cv
+import face_recognition as fr
 import numpy as np
+import time
+from datetime import datetime
 import os
-import json
-import soundfile as sf
-import zmq
 
-context = zmq.Context()
-#  Socket to talk to server
-print("Connecting to hello world server...")
-socket2 = context.socket(zmq.REQ)
-socket2.connect("tcp://localhost:5556")
+dir_path = os.path.dirname(os.path.abspath(__file__))
+model_path = os.path.join(dir_path, "shape_predictor_81_face_landmarks.dat")
+jpg_dir_path = os.path.join(dir_path, "faces")
 
+# Initialize face detector and shape predictor
+detector = dlib.get_frontal_face_detector()
 
-CHEAT = ["Computer keyboard", "Speech", "Whispering"]
-NON_CHEAT = ["Working", "Siren"]
-json_mapping_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "json_mapping.json")
-evidence_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "audio_evidence")
-if not os.path.exists(evidence_path):
-    os.makedirs(evidence_path)
+# Path for shape_predictor
+predictor = dlib.shape_predictor(model_path)
 
-with open(json_mapping_path, "r") as f:
-    map = json.load(f)
+# Load the known face image and encode it
+student_img = [fr.load_image_file(os.path.join(jpg_dir_path, jpg_file)) for jpg_file in os.listdir(jpg_dir_path) if
+               ".jpg" in jpg_file]
 
-script_path = os.path.abspath(__file__)
-dirname = os.path.dirname(script_path)
-
-# Load model
-custom_objects = {
-    'STFT': STFT,
-    'Magnitude': Magnitude,
-    'ApplyFilterbank': ApplyFilterbank,
-    'MagnitudeToDecibel': MagnitudeToDecibel,
-    'LogmelToMFCC': LogmelToMFCC
-}
-model_path = os.path.join(dirname, "model", "audio_prediction.h5")
-
-audio_prediction = tf.keras.models.load_model(model_path, custom_objects=custom_objects, compile=False)
-audio_prediction.compile(optimizer='adam',
-                         loss='categorical_crossentropy',
-                         metrics=['accuracy'])
-
-"""
-Predict whether the recorded audio reflect cheating
-
-<Argument> : <Argument Type>
-wav_file : (string) path to wave file.
-
-<Return Var> : <Return Type>
-_ : (Boolean) True for non-cheat and False for cheating.
-"""
+# List of known face encodings
+known_face_encoding = [fr.face_encodings(student_image)[0] for student_image in student_img]
+known_names = ["Student"]  # List of known names
 
 
-def predict_audio(wav, rate):
-    # classify sound event
-    audio, audio_batch = audio_preprocess(wav)
-    prediction = audio_prediction.predict(audio_batch)
-    predicted_label = np.argmax(prediction, axis=-1)
-    for category, index in map.items():
-        if index == predicted_label:
-            if category in CHEAT:
-                socket2.send_string(f"CHEATING DETECTED: {category}")
-                evidence_num = 1
-                filename = f"evidence_{evidence_num}.mp3"
-                filepath = os.path.join(evidence_path, filename)
-                while os.path.exists(filepath):
-                    evidence_num += 1
-                    filename = f"evidence_{evidence_num}.mp3"
-                    filepath = os.path.join(evidence_path, filename)
-                sf.write(filepath, audio, rate, format="mp3")
-                return False
-            else:
-                print(category)
-                return True
+def camera_monitor(img):
+    unknown_face_start_time = None
+
+    # Convert the image to grayscale for better face detection
+    gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+    faces = detector(gray)
+
+    # Check if more faces or no face present
+    if len(faces) > 1:
+        message = "More than one face detected!"
+        print(message)
+        unknown_face_start_time = time.time()
+        unknown_face_start_time = datetime.fromtimestamp(unknown_face_start_time)
+        log_message(message, unknown_face_start_time)
+        return True, img, unknown_face_start_time
+    elif len(faces) == 0:
+        message = "Face out of frame!"
+        print(message)
+        unknown_face_start_time = time.time()
+        unknown_face_start_time = datetime.fromtimestamp(unknown_face_start_time)
+        log_message(message, unknown_face_start_time)
+        return True, img, unknown_face_start_time
+
+    # If only one face present then proceed to identity check
+    for face in faces:
+        landmarks = predictor(gray, face)
+
+    # Print messages
+    if unknown_face_start_time is not None:
+        message = "Unknown face"
+        print(message)
+        log_message(message, unknown_face_start_time)
+        return True, img, unknown_face_start_time
+
+    return False, img, unknown_face_start_time
 
 
-"""
-Reshape the given wavefile to (40000,1) and add batch dimension to feed to model.predict()
-Pad with zeros if data points are less then 40000
-
-<Argument> : <Argument Type>
-wav_file : (string) path to wavefile
-
-<Return Var> : <Return Type>
-rate : sampling rate of audio
-wav : reshaped wavefile of dimension (40000,1)
-wav_batch : reshaped wavefile with extra batch dimension (40000, 1, 0)
-"""
-
-
-def audio_preprocess(wav):
-    wav = wav.reshape(-1, 1)
-    if wav.shape[0] < 40000:
-        wav = np.pad(wav, ((0, 40000 - wav.shape[0]), (0, 0)), mode="constant", constant_values=0)
-    elif wav.shape[0] > 40000:
-        wav = wav[:40000]
-    wav_batch = np.expand_dims(wav, axis=0)
-
-    return wav, wav_batch
+def log_message(message, timestamp):
+    log_dir = os.path.join(dir_path, 'frame_evidence')
+    if not os.path.exists(log_dir):
+        os.makedirs(log_dir)
+    log_file_path = os.path.join(log_dir, 'log.txt')
+    with open(log_file_path, 'a') as log_file:
+        log_file.write(f'{timestamp}: {message}\n')
