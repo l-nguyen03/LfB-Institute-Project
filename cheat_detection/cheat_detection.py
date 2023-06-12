@@ -1,4 +1,3 @@
-
 import pyaudio
 import numpy as np
 from predict import predict_audio
@@ -9,8 +8,8 @@ import time
 import os
 import threading
 from queue import Queue
-
-
+import zmq
+import base64
 
 dir_path = os.path.dirname(os.path.abspath(__file__))
 
@@ -33,6 +32,45 @@ void
 void
 
 '''
+
+def zmq_faces(socket_f):
+    # Path to log.txt
+    log_file_path = os.path.join('frame_evidence', 'log.txt')
+
+    # Open log.txt
+    with open(log_file_path, 'r') as file:
+        lines = file.readlines()
+        if lines:
+            last_line = lines[-1].strip()
+            socket_f.send_string(last_line)
+
+# Create zmq context
+context_f = zmq.Context()
+
+# Create zmq socket
+socket_f = context_f.socket(zmq.PUB)
+socket_f.bind("tcp://*:5555")
+
+def zmq_frame_evidence(socket_fe, image_path):
+    # Open the image in binary mode
+    with open(image_path, 'rb') as image_file:
+        image_data = image_file.read()
+
+    # Encode the image data to base64
+    image_data_base64 = base64.b64encode(image_data).decode('utf-8')
+
+    # Send the base64 encoded image
+    socket_fe.send_string(image_data_base64)
+
+# Create zmq context
+context_fe = zmq.Context()
+
+# Create zmq socket
+socket_fe = context_fe.socket(zmq.PUB)
+socket_fe.bind("tcp://*:5556")
+
+
+
 def face_monitor():
     ret, frame = cap.read()
     if not ret:
@@ -40,7 +78,11 @@ def face_monitor():
     else:
         cheat, frame, date_time = camera_monitor(frame)
         if cheat:
-            cv.imwrite(os.path.join(dir_path, "frame_evidence", f"{date_time}.jpg"), frame)
+            image_path = os.path.join(dir_path, "frame_evidence", f"{date_time}.jpg")
+            cv.imwrite(image_path, frame)
+            zmq_faces(socket_f)
+            zmq_frame_evidence(socket_fe, image_path)
+
 
 '''
 This function defines a thread that calls face_monitor every 30 seconds
@@ -115,7 +157,6 @@ if __name__ == "__main__":
                 stream.close()
                 audio.terminate()
                 break
-
 
 cap.release()
 cv.destroyAllWindows()
