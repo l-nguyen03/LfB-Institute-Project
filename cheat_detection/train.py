@@ -43,9 +43,10 @@ csv_logger = tf.keras.callbacks.CSVLogger(csv_path, append=False)
 
 model = Conv2D(num_classes, sample_rate, duration)
 model.summary()
-
+"""
 #Callback to save best performing weights.
 model_path = os.path.join(dirname, "model", "audio_prediction.h5")
 model_checkpoint = tf.keras.callbacks.ModelCheckpoint(model_path, monitor="val_loss", save_best_only=True, 
                                                       save_weights_only=False, mode="auto", save_freq="epoch", verbose=1)
 model.fit(train_data, validation_data=val_data, epochs=100, verbose=1, callbacks=[early_stoppping, csv_logger, model_checkpoint])
+"""
