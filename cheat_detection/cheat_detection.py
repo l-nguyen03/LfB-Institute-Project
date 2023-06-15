@@ -23,7 +23,10 @@ CHANNELS = 1
 '''
 The function captures a frame using OpenCV and pass
 the frame to another function to detect whether the student 
-cheats or not. If the student cheats, the captured 
+cheats or not. If the student cheats, the captured frame 
+and a brief description containing the behaviour and timestamp
+will be returned. The function then sends this frame and description
+to a GUI via ZeroMQ
 
 <Argument Name>: <Argument Type>
 void
@@ -32,56 +35,19 @@ void
 void
 
 '''
-
-def zmq_faces(socket_f):
-    # Path to log.txt
-    log_file_path = os.path.join('frame_evidence', 'log.txt')
-
-    # Open log.txt
-    with open(log_file_path, 'r') as file:
-        lines = file.readlines()
-        if lines:
-            last_line = lines[-1].strip()
-            socket_f.send_string(last_line)
-
-# Create zmq context
-context_f = zmq.Context()
-
-# Create zmq socket
-socket_f = context_f.socket(zmq.PUB)
-socket_f.bind("tcp://*:5555")
-
-def zmq_frame_evidence(socket_fe, image_path):
-    # Open the image in binary mode
-    with open(image_path, 'rb') as image_file:
-        image_data = image_file.read()
-
-    # Encode the image data to base64
-    image_data_base64 = base64.b64encode(image_data).decode('utf-8')
-
-    # Send the base64 encoded image
-    socket_fe.send_string(image_data_base64)
-
-# Create zmq context
-context_fe = zmq.Context()
-
-# Create zmq socket
-socket_fe = context_fe.socket(zmq.PUB)
-socket_fe.bind("tcp://*:5556")
-
-
-
 def face_monitor():
     ret, frame = cap.read()
     if not ret:
         print("Can't receive frame!")
     else:
-        cheat, frame, date_time = camera_monitor(frame)
+        cheat, frame, descriptor = camera_monitor(frame)
         if cheat:
-            image_path = os.path.join(dir_path, "frame_evidence", f"{date_time}.jpg")
-            cv.imwrite(image_path, frame)
-            zmq_faces(socket_f)
-            zmq_frame_evidence(socket_fe, image_path)
+            #image_path = os.path.join(dir_path, "frame_evidence", f"{date_time}.jpg")
+            _, frame_encoded = cv.imencode('.jpg', frame)
+            frame_bytes = frame_encoded.tobytes()
+            topic = "frame_evidence"
+            socket_frame.send_multipart([topic.encode(), frame_bytes, descriptor.encode()])
+
 
 
 '''
@@ -94,14 +60,22 @@ def face_monitor_thread(stop_event):
         stop_event.wait(5)
 
 '''
-Process the audio stored in audio_queue and use the CNN to predict until 
-stop_event is set
+Process the audio stored in audio_queue by passing the
+recorded audio to a function that uses CNN to predict. The function
+will return the audio and a brief description if cheating is 
+detected. This function then sends this audio and description via ZeroMQ.
+This functions runs until stop_event is set
 '''
 def audio_detection(stop_event, audio_queue):
     while not stop_event.is_set():
         if not audio_queue.empty():
             recorded_audio = audio_queue.get()
-            predict_audio(recorded_audio, SAMPLE_RATE)
+            cheat, descriptor, audio =  predict_audio(recorded_audio, SAMPLE_RATE)
+            if cheat: 
+                audio_bytes = audio.tobytes()
+                topic = "audio_evidence"
+                socket_audio.send_multipart([topic.encode(), audio_bytes, descriptor.encode()])
+
 
 '''
 This function defines a thread that record the microphone's input and save it in a queue
@@ -129,6 +103,15 @@ def prepare_message():
 
 
 if __name__ == "__main__":
+    context = zmq.Context()
+    
+    #Initiate socket for sending image frame
+    socket_frame = context.socket(zmq.PUB)
+    socket_frame.bind("tcp://*:5555")
+
+    #Initiate socket for sending audio frame
+    socket_audio = context.socket(zmq.PUB)
+    socket_audio.bind("tcp://*:5556")
 
     audio = pyaudio.PyAudio()
     #start stream
@@ -157,6 +140,9 @@ if __name__ == "__main__":
                 stream.close()
                 audio.terminate()
                 break
-
+#Close the socket and terminate the ZMQ context.
+socket_audio.close()
+socket_frame.close()
+context.term()
 cap.release()
 cv.destroyAllWindows()

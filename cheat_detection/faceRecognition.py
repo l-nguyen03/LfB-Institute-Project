@@ -25,6 +25,14 @@ known_face_encoding = [fr.face_encodings(student_image)[0] for student_image in 
 known_names = ["Student"]  # List of known names
 
 
+
+"""
+The function uses an input image frame and detect 2 things:
+How many faces there are in the input frame and 
+whether the identity of the test taker match the reference image
+It then returns a boolean value indicating cheating and if cheating is detected
+return the frame as evidence and a brief description.
+"""
 def camera_monitor(img):
     unknown_face_start_time = None
 
@@ -37,35 +45,64 @@ def camera_monitor(img):
         message = "More than one face detected!"
         print(message)
         unknown_face_start_time = time.time()
-        unknown_face_start_time = datetime.fromtimestamp(unknown_face_start_time)
-        log_message(message, unknown_face_start_time)
-        return True, img, unknown_face_start_time
+        unknown_face_start_time = str(datetime.fromtimestamp(unknown_face_start_time))
+        descriptor = f"{message} at {unknown_face_start_time}"
+        return True, img, descriptor
     elif len(faces) == 0:
         message = "Face out of frame!"
         print(message)
         unknown_face_start_time = time.time()
         unknown_face_start_time = datetime.fromtimestamp(unknown_face_start_time)
-        log_message(message, unknown_face_start_time)
-        return True, img, unknown_face_start_time
+        descriptor = f"{message} at {unknown_face_start_time}"
+        return True, img, descriptor
 
     # If only one face present then proceed to identity check
     for face in faces:
         landmarks = predictor(gray, face)
+        # Extract face from the camera
+        x, y, width, height = face.left(), face.top(), face.width(), face.height()
+        cv.rectangle(img, (x, y), (x + width, y + height), color=(0, 0, 255), thickness=5)
+        face_img = img[y:y + height, x:x + width]
+
+        if face_img.size == 0:
+            continue
+
+        face_img_rgb = cv.cvtColor(face_img, cv.COLOR_BGR2RGB)
+
+        # Compare the face with the known faces
+        face_encoding = fr.face_encodings(face_img_rgb)
+        name = "Unknown"
+        accuracy = 0
+
+        if len(face_encoding) > 0:
+            face_encoding = face_encoding[0]
+            results = fr.compare_faces(known_face_encoding, face_encoding)
+
+            if True in results:
+                matched_index = results.index(True)
+                name = known_names[matched_index]
+                face_distances = fr.face_distance(known_face_encoding, face_encoding)
+                accuracy = round((1 - face_distances[matched_index]) * 100, 2)
+
+            if name == "Unknown":
+                unknown_face_start_time = time.time()
+                unknown_face_start_time = str(datetime.fromtimestamp(unknown_face_start_time))
+
+        # Draw a bounding box around the face and write the name below it
+        cv.putText(img, f"{name} ({accuracy}%)", (x, y - 10), cv.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 2)
+
+        # Draw landmarks on the face
+        for n in range(81):
+            x, y = landmarks.part(n).x, landmarks.part(n).y
+            cv.circle(img, (x, y), 2, (0, 255, 0), -1)
 
     # Print messages
     if unknown_face_start_time is not None:
         message = "Unknown face"
         print(message)
-        log_message(message, unknown_face_start_time)
-        return True, img, unknown_face_start_time
+        descriptor = f"{message} at {unknown_face_start_time}"
+        return True, img, descriptor
 
-    return False, img, unknown_face_start_time
+    return False, None, None
 
 
-def log_message(message, timestamp):
-    log_dir = os.path.join(dir_path, 'frame_evidence')
-    if not os.path.exists(log_dir):
-        os.makedirs(log_dir)
-    log_file_path = os.path.join(log_dir, 'log.txt')
-    with open(log_file_path, 'a') as log_file:
-        log_file.write(f'{timestamp}: {message}\n')

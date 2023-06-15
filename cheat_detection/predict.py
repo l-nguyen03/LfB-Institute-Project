@@ -17,6 +17,7 @@ evidence_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "audio_
 if not os.path.exists(evidence_path):
     os.makedirs(evidence_path)
 
+"""
 # Create ZMQ context
 context_a = zmq.Context()
 context_ae = zmq.Context()
@@ -27,7 +28,7 @@ socket_a.bind("tcp://*:5557")
 
 socket_ae = context_ae.socket(zmq.PUB)
 socket_ae.bind("tcp://*:5558")
-
+"""
 
 with open(json_mapping_path, "r") as f:
     map = json.load(f)
@@ -51,7 +52,10 @@ audio_prediction.compile(optimizer='adam',
                   metrics=['accuracy'])
 
 """
-Predict whether the recorded audio reflects cheating
+Predict whether the recorded audio reflects cheating.
+If cheating is detected, it will return a boolean value
+indicating cheating and the audio as evidence 
+with a brief description
 
 <Argument>: <Argument Type>
 wav_file: (string) path to wave file.
@@ -70,29 +74,12 @@ def predict_audio(wav, rate):
             if category in CHEAT:
                 timestamp = time.time()
                 timestamp = str(datetime.fromtimestamp(timestamp))
+                descriptor = f"{category} at {timestamp}"
                 print(f"CHEATING DETECTED: {category}")
-                evidence_num = 1
-                filename = f"evidence_{evidence_num}.mp3"
-                filepath = os.path.join(evidence_path, filename)
-                while os.path.exists(filepath):
-                    evidence_num += 1
-                    filename = f"evidence_{evidence_num}.mp3"
-                    filepath = os.path.join(evidence_path, filename)
-                sf.write(filepath, audio, rate, format="mp3")
-
-                # Send cheat reason over ZMQ
-                socket_a.send_string(timestamp + " " + category)
-
-                # Send audio evidence over ZMQ
-                with open(filepath, 'rb') as audio_file:
-                    audio_data = audio_file.read()
-                audio_data_base64 = base64.b64encode(audio_data).decode('utf-8')
-                socket_ae.send_string(audio_data_base64)
-
-                return False
+                return True, descriptor, audio
             else:
                 print(category)
-                return True
+                return False, None, None
 
 
 """
