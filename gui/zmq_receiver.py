@@ -5,14 +5,13 @@ import os
 from scipy.io import wavfile
 from datetime import datetime
 import threading
+import queue
 
 SAMPLE_RATE = 16000
 
 dir_path = os.path.dirname(os.path.abspath(__file__))
-frame_dir = os.path.join(dir_path, "frame_evidence")
-audio_dir = os.path.join(dir_path, "audio_evidence")
-os.makedirs(frame_dir, exist_ok=True)
-os.makedirs(audio_dir, exist_ok=True)
+evidence_dir = os.path.join(dir_path, "evidence")
+os.makedirs(evidence_dir, exist_ok=True)
 
 context = zmq.Context()
 
@@ -25,6 +24,7 @@ socket_frame.setsockopt_string(zmq.SUBSCRIBE, "frame_evidence")
 socket_audio = context.socket(zmq.SUB)
 socket_audio.connect("tcp://localhost:5556")
 socket_audio.setsockopt_string(zmq.SUBSCRIBE, "audio_evidence")
+
 
 
 """
@@ -40,10 +40,12 @@ def receive_frame(stop_event):
             descriptor = descriptor_bytes.decode()
             print(f"Frame description: {descriptor}")
 
+            behaviour = descriptor.split(" at ")[0]
             frame = np.frombuffer(frame_bytes, dtype=np.uint8)
             frame_decoded = cv.imdecode(frame, cv.IMREAD_COLOR)
+
             date_time = datetime.now().strftime("%Y_%m_%d-%H_%M_%S")
-            image_path = os.path.join(frame_dir, f"{date_time}.jpg")
+            image_path = os.path.join(evidence_dir, f"{behaviour}_{date_time}.jpg")
             cv.imwrite(image_path, frame_decoded)
 
 
@@ -62,9 +64,11 @@ def receive_audio(stop_event):
             print(f"Audio description: {descriptor}")
 
             # Convert the bytes back to original audio data format
-            audio_data = np.frombuffer(audio_bytes, dtype=np.int16).reshape(-1, 1)
+            audio_data = np.frombuffer(audio_bytes, dtype=np.int16).transpose()
+
+            behaviour = descriptor.split(" ")[0]
             date_time = datetime.now().strftime("%Y_%m_%d-%H_%M_%S")
-            audio_path = os.path.join(audio_dir, f"{date_time}.wav")
+            audio_path = os.path.join(evidence_dir, f"{behaviour}_{date_time}.wav")
             wavfile.write(audio_path, SAMPLE_RATE, audio_data)
 
 
@@ -75,10 +79,10 @@ if __name__ == "__main__":
     # Create threads for each function
     thread_frame = threading.Thread(target=receive_frame, args=(stop_event,))
     thread_audio = threading.Thread(target=receive_audio, args=(stop_event,))
-    # Start the threads
-    thread_frame.start()
-    thread_audio.start()
     try:
+        # Start the threads
+        thread_frame.start()
+        thread_audio.start()
         # Wait for both threads to complete
         thread_frame.join()
         thread_audio.join()

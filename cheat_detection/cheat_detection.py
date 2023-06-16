@@ -10,6 +10,8 @@ import threading
 from queue import Queue
 import zmq
 import base64
+import pdb
+
 
 dir_path = os.path.dirname(os.path.abspath(__file__))
 
@@ -91,15 +93,19 @@ def audio_recording(stop_event, num_chunks):
         stop_event.wait(1)
 
 '''
-Describe concisely about what the function does and specify:
-
-<Argument Name>: <Argument Type>
-
-<Return Variable>: <Return Type>
+This function listens to the proctor's socket to see if any command is given
+If the command is to disqualify the student, the program will terminate
 
 '''
-def prepare_message():
-    pass
+def receive_proctor_message():
+    if socket_proctor.poll(1):
+        print("Inside If") # Check if there's a message on the image frame socket
+        _, descriptor_bytes = socket_proctor.recv_multipart()
+
+        descriptor = descriptor_bytes.decode()
+        print(descriptor)
+        raise Exception("Disqualified")
+
 
 
 if __name__ == "__main__":
@@ -112,6 +118,11 @@ if __name__ == "__main__":
     #Initiate socket for sending audio frame
     socket_audio = context.socket(zmq.PUB)
     socket_audio.bind("tcp://*:5556")
+
+    #Initiate socket for receiving proctor's commmand
+    socket_proctor = context.socket(zmq.SUB)
+    socket_proctor.bind("tcp://*:5558")
+    socket_proctor.setsockopt_string(zmq.SUBSCRIBE, "")
 
     audio = pyaudio.PyAudio()
     #start stream
@@ -134,8 +145,14 @@ if __name__ == "__main__":
         #Loop unitl interrupt with Ctrl+C
         while True:
             try:
-                time.sleep(1)
+                receive_proctor_message()
             except KeyboardInterrupt:
+                stop_event.set()
+                stream.close()
+                audio.terminate()
+                break
+            except Exception as e:
+                print(e)
                 stop_event.set()
                 stream.close()
                 audio.terminate()
@@ -143,6 +160,7 @@ if __name__ == "__main__":
 #Close the socket and terminate the ZMQ context.
 socket_audio.close()
 socket_frame.close()
+socket_proctor.close()
 context.term()
 cap.release()
 cv.destroyAllWindows()
