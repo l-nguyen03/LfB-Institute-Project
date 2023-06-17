@@ -19,11 +19,11 @@ def send_disqualify(behaviour):
     context = zmq.Context()
     #Initiate socket for sending disqualify decision
     socket = context.socket(zmq.PUB)
-    socket.connect("tcp://localhost:5558")
+    socket.connect("tcp://host.docker.internal:5558")
     time.sleep(2)
     topic = "DISQUALIFIED"
     message = f"You are hereby disqualified because of cheating behaviour: {behaviour}"
-    st.text("Sending Decision to Student.....")
+    st.text("Sending message to student.....")
     socket.send_multipart([topic.encode(), message.encode()])
     socket.close()
     context.term()
@@ -78,8 +78,3 @@ if __name__ == "__main__":
                 st.audio(audio, sample_rate=sample_rate)
                 st.button("Yes!", on_click=send_disqualify, args=(behavior,))
                 st.button("No.")
-
-
-
-
-
