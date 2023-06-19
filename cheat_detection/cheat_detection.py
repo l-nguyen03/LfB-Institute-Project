@@ -99,7 +99,7 @@ If the command is to disqualify the student, the program will terminate
 '''
 def receive_proctor_message():
     if socket_proctor.poll(1):
-        print("Inside If") # Check if there's a message on the image frame socket
+        # Check if there's a message on the image frame socket
         _, descriptor_bytes = socket_proctor.recv_multipart()
 
         descriptor = descriptor_bytes.decode()
@@ -109,58 +109,64 @@ def receive_proctor_message():
 
 
 if __name__ == "__main__":
-    context = zmq.Context()
-    
-    #Initiate socket for sending image frame
-    socket_frame = context.socket(zmq.PUB)
-    socket_frame.bind("tcp://*:5555")
+    try:
+        context = zmq.Context()
+        
+        #Initiate socket for sending image frame
+        socket_frame = context.socket(zmq.PUB)
+        socket_frame.bind("tcp://*:5555")
 
-    #Initiate socket for sending audio frame
-    socket_audio = context.socket(zmq.PUB)
-    socket_audio.bind("tcp://*:5556")
+        #Initiate socket for sending audio frame
+        socket_audio = context.socket(zmq.PUB)
+        socket_audio.bind("tcp://*:5556")
 
-    #Initiate socket for receiving proctor's commmand
-    socket_proctor = context.socket(zmq.SUB)
-    socket_proctor.bind("tcp://*:5558")
-    socket_proctor.setsockopt_string(zmq.SUBSCRIBE, "")
+        #Initiate socket for receiving proctor's commmand
+        socket_proctor = context.socket(zmq.SUB)
+        socket_proctor.bind("tcp://*:5558")
+        socket_proctor.setsockopt_string(zmq.SUBSCRIBE, "DISQUALIFIED")
 
-    audio = pyaudio.PyAudio()
-    #start stream
-    stream = audio.open(format=FORMAT,
-                    channels=CHANNELS,
-                    rate=SAMPLE_RATE,
-                    input=True,
-                    frames_per_buffer=CHUNK)
-    num_chunks = int(SAMPLE_RATE / CHUNK * DURATION)
-    stop_event = threading.Event()
-    cap = cv.VideoCapture(0)
-    time.sleep(2)
-    audio_queue = Queue()
-    if not cap.isOpened():
-        print("Error opening video capture")
-    else:
-        threading.Thread(target=face_monitor_thread, args=(stop_event,)).start()
-        threading.Thread(target=audio_recording, args=(stop_event, num_chunks)).start()
-        threading.Thread(target=audio_detection, args=(stop_event, audio_queue)).start()
-        #Loop unitl interrupt with Ctrl+C
-        while True:
-            try:
+        audio = pyaudio.PyAudio()
+        #start stream
+        stream = audio.open(format=FORMAT,
+                        channels=CHANNELS,
+                        rate=SAMPLE_RATE,
+                        input=True,
+                        frames_per_buffer=CHUNK)
+        num_chunks = int(SAMPLE_RATE / CHUNK * DURATION)
+        stop_event = threading.Event()
+        cap = cv.VideoCapture(0)
+        time.sleep(2)
+        audio_queue = Queue()
+        if not cap.isOpened():
+            print("Error opening video capture")
+        else:
+            thread1 = threading.Thread(target=face_monitor_thread, args=(stop_event,))
+            thread1.daemon = True
+            thread2 = threading.Thread(target=audio_recording, args=(stop_event, num_chunks))
+            thread2.daemon = True
+            thread3 = threading.Thread(target=audio_detection, args=(stop_event, audio_queue))
+            thread3.daemon = True
+            thread1.start()
+            thread2.start()
+            thread3.start()
+            #Loop unitl interrupt with Ctrl+C
+            while True:
                 receive_proctor_message()
-            except KeyboardInterrupt:
-                stop_event.set()
-                stream.close()
-                audio.terminate()
-                break
-            except Exception as e:
-                print(e)
-                stop_event.set()
-                stream.close()
-                audio.terminate()
-                break
-#Close the socket and terminate the ZMQ context.
-socket_audio.close()
-socket_frame.close()
-socket_proctor.close()
-context.term()
-cap.release()
-cv.destroyAllWindows()
+    except KeyboardInterrupt:
+        print("Program terminated by user.....")
+    except Exception as e:
+        print(e)
+    finally:
+        # In case of exception or manual termination, ensure all resources are properly cleaned up
+        stop_event.set()
+        #Check whether audio stream still running.
+        if 'stream' in locals():
+            stream.close()
+        if 'audio' in locals():
+            audio.terminate()
+        socket_audio.close()
+        socket_frame.close()
+        socket_proctor.close()
+        context.term()
+        cap.release()
+        cv.destroyAllWindows()

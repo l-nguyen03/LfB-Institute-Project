@@ -23,7 +23,6 @@ def send_disqualify(behaviour):
     time.sleep(2)
     topic = "DISQUALIFIED"
     message = f"You are hereby disqualified because of cheating behaviour: {behaviour}"
-    st.text("Sending Decision to Student.....")
     socket.send_multipart([topic.encode(), message.encode()])
     socket.close()
     context.term()
