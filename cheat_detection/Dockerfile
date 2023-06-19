@@ -1,9 +1,12 @@
 # syntax=docker/dockerfile:1
 FROM ubuntu:22.04
 
-WORKDIR /cheat-detection
 
-# Copy required files to the container
+WORKDIR /cheat-detection
+ENV PATH="/root/miniconda3/bin:${PATH}"
+ARG PATH="/root/miniconda3/bin:${PATH}"
+
+# Copy require files to the container
 COPY requirements.txt /cheat-detection/requirements.txt
 COPY cheat_detection.py /cheat-detection/cheat_detection.py
 COPY faceRecognition.py /cheat-detection/faceRecognition.py
@@ -15,11 +18,19 @@ COPY frame_evidence/ /cheat-detection/frame_evidence/
 COPY audio_evidence/ /cheat-detection/audio_evidence/
 COPY faces/ /cheat-detection/faces/
 
-# Install required dependencies
+# Install required dependencies for audio streaming
 RUN apt-get update && \
     apt-get install -y \
-        python3-pip \
-        python3-dev \
+        wget \
+        portaudio19-dev \
+        libsndfile1 \
+        ffmpeg \
+        && rm -rf /var/lib/apt/lists/*
+
+# Install required dependencies for PyAudio
+RUN apt-get update && \
+    apt-get install -y \
+        wget \
         portaudio19-dev \
         libsndfile1 \
         cmake \
@@ -28,14 +39,26 @@ RUN apt-get update && \
         ffmpeg \
         && rm -rf /var/lib/apt/lists/*
 
-# Install Python dependencies
-RUN pip3 install --no-cache-dir -r requirements.txt
+RUN wget \
+    https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh \
+    && mkdir /root/.conda \
+    && bash Miniconda3-latest-Linux-x86_64.sh -b \
+    && rm -f Miniconda3-latest-Linux-x86_64.sh
+
+# Create a new Python 3.9 environment named "cheat_detection"
+RUN conda create -y -n cheat_detection python=3.9
+
+RUN echo "source /root/miniconda3/etc/profile.d/conda.sh" >> ~/.bashrc && \
+    echo "conda activate cheat_detection" >> ~/.bashrc && \
+    /bin/bash -c "source /root/miniconda3/etc/profile.d/conda.sh && \
+    conda activate cheat_detection && \
+    pip install --no-cache-dir -r requirements.txt"
 
 EXPOSE 5555
 EXPOSE 5556
 EXPOSE 5558
 
-# Set the entry point to start cheat_detection.py
-ENTRYPOINT [ "python3", "/cheat-detection/cheat_detection.py" ]
+# Set the entry point to start a shell with the environment activated
+ENTRYPOINT [ "/bin/bash", "-c", "source /root/miniconda3/etc/profile.d/conda.sh && conda activate cheat_detection && /bin/bash" ]
 
 
