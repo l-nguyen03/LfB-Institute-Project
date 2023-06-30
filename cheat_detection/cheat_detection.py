@@ -1,4 +1,3 @@
-
 import pyaudio
 import numpy as np
 from predict import predict_audio
@@ -9,6 +8,10 @@ import time
 import os
 import threading
 from queue import Queue
+import zmq
+import base64
+import pdb
+
 
 dir_path = os.path.dirname(os.path.abspath(__file__))
 
@@ -22,7 +25,10 @@ CHANNELS = 1
 '''
 The function captures a frame using OpenCV and pass
 the frame to another function to detect whether the student 
-cheats or not. If the student cheats, the captured 
+cheats or not. If the student cheats, the captured frame 
+and a brief description containing the behaviour and timestamp
+will be returned. The function then sends this frame and description
+to a GUI via ZeroMQ
 
 <Argument Name>: <Argument Type>
 void
@@ -36,9 +42,15 @@ def face_monitor():
     if not ret:
         print("Can't receive frame!")
     else:
-        cheat, frame, date_time = camera_monitor(frame)
+        cheat, frame, descriptor = camera_monitor(frame)
         if cheat:
-            cv.imwrite(os.path.join(dir_path, "frame_evidence", f"{date_time}.jpg"), frame)
+            #image_path = os.path.join(dir_path, "frame_evidence", f"{date_time}.jpg")
+            _, frame_encoded = cv.imencode('.jpg', frame)
+            frame_bytes = frame_encoded.tobytes()
+            topic = "frame_evidence"
+            socket_frame.send_multipart([topic.encode(), frame_bytes, descriptor.encode()])
+
+
 
 '''
 This function defines a thread that calls face_monitor every 30 seconds
@@ -50,14 +62,22 @@ def face_monitor_thread(stop_event):
         stop_event.wait(5)
 
 '''
-Process the audio stored in audio_queue and use the CNN to predict until 
-stop_event is set
+Process the audio stored in audio_queue by passing the
+recorded audio to a function that uses CNN to predict. The function
+will return the audio and a brief description if cheating is 
+detected. This function then sends this audio and description via ZeroMQ.
+This functions runs until stop_event is set
 '''
 def audio_detection(stop_event, audio_queue):
     while not stop_event.is_set():
         if not audio_queue.empty():
             recorded_audio = audio_queue.get()
-            predict_audio(recorded_audio, SAMPLE_RATE)
+            cheat, descriptor, audio =  predict_audio(recorded_audio, SAMPLE_RATE)
+            if cheat: 
+                audio_bytes = audio.tobytes()
+                topic = "audio_evidence"
+                socket_audio.send_multipart([topic.encode(), audio_bytes, descriptor.encode()])
+
 
 '''
 This function defines a thread that record the microphone's input and save it in a queue
@@ -73,46 +93,80 @@ def audio_recording(stop_event, num_chunks):
         stop_event.wait(1)
 
 '''
-Describe concisely about what the function does and specify:
-
-<Argument Name>: <Argument Type>
-
-<Return Variable>: <Return Type>
+This function listens to the proctor's socket to see if any command is given
+If the command is to disqualify the student, the program will terminate
 
 '''
-def prepare_message():
-    pass
+def receive_proctor_message():
+    if socket_proctor.poll(1):
+        # Check if there's a message on the image frame socket
+        _, descriptor_bytes = socket_proctor.recv_multipart()
+
+        descriptor = descriptor_bytes.decode()
+        print(descriptor)
+        raise Exception("Disqualified")
+
 
 
 if __name__ == "__main__":
+    try:
+        context = zmq.Context()
+        
+        #Initiate socket for sending image frame
+        socket_frame = context.socket(zmq.PUB)
+        socket_frame.bind("tcp://*:5555")
 
-    audio = pyaudio.PyAudio()
-    #start stream
-    stream = audio.open(format=FORMAT,
-                    channels=CHANNELS,
-                    rate=SAMPLE_RATE,
-                    input=True,
-                    frames_per_buffer=CHUNK)
-    num_chunks = int(SAMPLE_RATE / CHUNK * DURATION)
-    stop_event = threading.Event()
-    cap = cv.VideoCapture(0)
-    time.sleep(2)
-    audio_queue = Queue()
-    if not cap.isOpened():
-        print("Error opening video capture")
-    else:
-        threading.Thread(target=face_monitor_thread, args=(stop_event,)).start()
-        threading.Thread(target=audio_recording, args=(stop_event, num_chunks)).start()
-        threading.Thread(target=audio_detection, args=(stop_event, audio_queue)).start()
-        #Loop unitl interrupt with Ctrl+C
-        while True:
-            try:
-                time.sleep(1)
-            except KeyboardInterrupt:
-                stop_event.set()
-                stream.close()
-                audio.terminate()
-                break
+        #Initiate socket for sending audio frame
+        socket_audio = context.socket(zmq.PUB)
+        socket_audio.bind("tcp://*:5556")
 
-cap.release()
-cv.destroyAllWindows()
+        #Initiate socket for receiving proctor's commmand
+        socket_proctor = context.socket(zmq.SUB)
+        socket_proctor.bind("tcp://*:5558")
+        socket_proctor.setsockopt_string(zmq.SUBSCRIBE, "DISQUALIFIED")
+
+        audio = pyaudio.PyAudio()
+        #start stream
+        stream = audio.open(format=FORMAT,
+                        channels=CHANNELS,
+                        rate=SAMPLE_RATE,
+                        input=True,
+                        frames_per_buffer=CHUNK)
+        num_chunks = int(SAMPLE_RATE / CHUNK * DURATION)
+        stop_event = threading.Event()
+        cap = cv.VideoCapture(0)
+        time.sleep(2)
+        audio_queue = Queue()
+        if not cap.isOpened():
+            print("Error opening video capture")
+        else:
+            thread1 = threading.Thread(target=face_monitor_thread, args=(stop_event,))
+            thread1.daemon = True
+            thread2 = threading.Thread(target=audio_recording, args=(stop_event, num_chunks))
+            thread2.daemon = True
+            thread3 = threading.Thread(target=audio_detection, args=(stop_event, audio_queue))
+            thread3.daemon = True
+            thread1.start()
+            thread2.start()
+            thread3.start()
+            #Loop unitl interrupt with Ctrl+C
+            while True:
+                receive_proctor_message()
+    except KeyboardInterrupt:
+        print("Program terminated by user.....")
+    except Exception as e:
+        print(e)
+    finally:
+        # In case of exception or manual termination, ensure all resources are properly cleaned up
+        stop_event.set()
+        #Check whether audio stream still running.
+        if 'stream' in locals():
+            stream.close()
+        if 'audio' in locals():
+            audio.terminate()
+        socket_audio.close()
+        socket_frame.close()
+        socket_proctor.close()
+        context.term()
+        cap.release()
+        cv.destroyAllWindows()

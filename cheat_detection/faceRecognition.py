@@ -10,7 +10,6 @@ dir_path = os.path.dirname(os.path.abspath(__file__))
 model_path = os.path.join(dir_path, "shape_predictor_81_face_landmarks.dat")
 jpg_dir_path = os.path.join(dir_path, "faces")
 
-
 # Initialize face detector and shape predictor
 detector = dlib.get_frontal_face_detector()
 
@@ -18,9 +17,8 @@ detector = dlib.get_frontal_face_detector()
 predictor = dlib.shape_predictor(model_path)
 
 # Load the known face image and encode it
-
-# Path for the known face
-student_img = [fr.load_image_file(os.path.join(jpg_dir_path, jpg_file)) for jpg_file in os.listdir(jpg_dir_path) if ".jpg" in jpg_file]
+student_img = [fr.load_image_file(os.path.join(jpg_dir_path, jpg_file)) for jpg_file in os.listdir(jpg_dir_path) if
+               ".jpg" in jpg_file]
 
 # List of known face encodings
 known_face_encoding = [fr.face_encodings(student_image)[0] for student_image in student_img]
@@ -28,43 +26,42 @@ known_names = ["Student"]  # List of known names
 
 
 
-'''
-Function for monitoring the examinee camera during exam.
-The function receives a captured frame and count how many faces
-are present and then perform identity check. 
-
-<Argument> : <Argument Type>
-img : Frame captured by using cv.capture
-
-<Return> : <Return Type>
-cheat or not? : bool 
-frame as evidence : NumPy Array
-date and time of the behaviour
-'''
+"""
+The function uses an input image frame and detect 2 things:
+How many faces there are in the input frame and 
+whether the identity of the test taker match the reference image
+It then returns a boolean value indicating cheating and if cheating is detected
+return the frame as evidence and a brief description.
+"""
 def camera_monitor(img):
     unknown_face_start_time = None
-    
 
     # Convert the image to grayscale for better face detection
     gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
     faces = detector(gray)
 
-    #Check if more faces or no face present
+    # Check if more faces or no face present
     if len(faces) > 1:
-        print("More than one face detected!")
+        message = "More than one face detected!"
+        print(message)
+        unknown_face_start_time = time.time()
+        unknown_face_start_time = str(datetime.fromtimestamp(unknown_face_start_time))
+        descriptor = f"{message} at {unknown_face_start_time}"
+        for face in faces:
+            x, y, width, height = face.left(), face.top(), face.width(), face.height()
+            cv.rectangle(img, (x, y), (x + width, y + height), color=(0, 0, 255), thickness=5)
+        return True, img, descriptor
+    elif len(faces) == 0:
+        message = "Face out of frame!"
+        print(message)
         unknown_face_start_time = time.time()
         unknown_face_start_time = datetime.fromtimestamp(unknown_face_start_time)
-        return True, img, unknown_face_start_time
-    elif len(faces) == 0: 
-        print("Face out of frame!")
-        unknown_face_start_time = time.time()
-        unknown_face_start_time = datetime.fromtimestamp(unknown_face_start_time)
-        return True, img, unknown_face_start_time
+        descriptor = f"{message} at {unknown_face_start_time}"
+        return True, img, descriptor
 
-    #If only one face present then proceed to identity check
+    # If only one face present then proceed to identity check
     for face in faces:
         landmarks = predictor(gray, face)
-
         # Extract face from the camera
         x, y, width, height = face.left(), face.top(), face.width(), face.height()
         cv.rectangle(img, (x, y), (x + width, y + height), color=(0, 0, 255), thickness=5)
@@ -92,7 +89,7 @@ def camera_monitor(img):
 
             if name == "Unknown":
                 unknown_face_start_time = time.time()
-                unknown_face_start_time = datetime.fromtimestamp(unknown_face_start_time)
+                unknown_face_start_time = str(datetime.fromtimestamp(unknown_face_start_time))
 
         # Draw a bounding box around the face and write the name below it
         cv.putText(img, f"{name} ({accuracy}%)", (x, y - 10), cv.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 2)
@@ -104,7 +101,11 @@ def camera_monitor(img):
 
     # Print messages
     if unknown_face_start_time is not None:
-        print("Unknown face")
-        return True, img, unknown_face_start_time
-    
-    return False, img, unknown_face_start_time
+        message = "Unknown face"
+        print(message)
+        descriptor = f"{message} at {unknown_face_start_time}"
+        return True, img, descriptor
+
+    return False, img, None
+
+
