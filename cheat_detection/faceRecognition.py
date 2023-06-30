@@ -47,6 +47,9 @@ def camera_monitor(img):
         unknown_face_start_time = time.time()
         unknown_face_start_time = str(datetime.fromtimestamp(unknown_face_start_time))
         descriptor = f"{message} at {unknown_face_start_time}"
+        for face in faces:
+            x, y, width, height = face.left(), face.top(), face.width(), face.height()
+            cv.rectangle(img, (x, y), (x + width, y + height), color=(0, 0, 255), thickness=5)
         return True, img, descriptor
     elif len(faces) == 0:
         message = "Face out of frame!"
@@ -103,6 +106,6 @@ def camera_monitor(img):
         descriptor = f"{message} at {unknown_face_start_time}"
         return True, img, descriptor
 
-    return False, None, None
+    return False, img, None
 
 
