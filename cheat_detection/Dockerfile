@@ -47,4 +47,3 @@ EXPOSE 5558
 # Set the entry point to run cheat_detection.py and read from microphone
 ENTRYPOINT ["python3", "cheat_detection.py"]
 
-
