@@ -19,7 +19,7 @@ def send_disqualify(behaviour):
     context = zmq.Context()
     #Initiate socket for sending disqualify decision
     socket = context.socket(zmq.PUB)
-    socket.connect("tcp://host.docker.internal:5558")
+    socket.bind("tcp://*:5558")
     time.sleep(2)
     topic = "DISQUALIFIED"
     message = f"You are hereby disqualified because of cheating behaviour: {behaviour}"
@@ -54,6 +54,7 @@ if __name__ == "__main__":
 
     if oldest_file_path is None: 
         st.text("There isn't any cheating behaviour yet.")
+        time.sleep(5)
         st.experimental_rerun()
     else: 
         oldest_file_name = os.path.basename(oldest_file_path)

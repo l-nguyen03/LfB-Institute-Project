@@ -17,12 +17,12 @@ context = zmq.Context()
 
 # Initiate Socket for image frames
 socket_frame = context.socket(zmq.SUB)
-socket_frame.connect("tcp://host.docker.internal:5555")
+socket_frame.bind("tcp://*:5555")
 socket_frame.setsockopt_string(zmq.SUBSCRIBE, "frame_evidence")
 
 # Inititate Socket for audio data
 socket_audio = context.socket(zmq.SUB)
-socket_audio.connect("tcp://host.docker.internal:5556")
+socket_audio.bind("tcp://*:5556")
 socket_audio.setsockopt_string(zmq.SUBSCRIBE, "audio_evidence")
 
 

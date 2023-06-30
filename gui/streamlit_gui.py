@@ -19,7 +19,7 @@ def send_disqualify(behaviour):
     context = zmq.Context()
     #Initiate socket for sending disqualify decision
     socket = context.socket(zmq.PUB)
-    socket.connect("tcp://localhost:5558")
+    socket.bind("tcp://*:5558")
     time.sleep(2)
     topic = "DISQUALIFIED"
     message = f"You are hereby disqualified because of cheating behaviour: {behaviour}"
