@@ -10,12 +10,21 @@ import time
 def get_dir_path():
     dir_path = os.path.dirname(os.path.abspath(__file__))
     evidence_dir = os.path.join(dir_path, "evidence")
+    log_dir = os.path.join(dir_path, "log")
     os.makedirs(evidence_dir, exist_ok=True)
-    return dir_path, evidence_dir
+    os.makedirs(log_dir, exist_ok=True)
+    return dir_path, evidence_dir, log_dir
 
 
 
-def send_disqualify(behaviour):
+def send_disqualify(behaviour, file_extension, data, log_dir, matrikelnr):
+    if file_extension == ".jpg":
+        image_path = os.path.join(log_dir, f"{matrikelnr}_{behaviour}.jpg")
+        cv.imwrite(image_path, data)
+    elif file_extension == ".wav":
+        audio_path = os.path.join(log_dir, f"{matrikelnr}_{behaviour}.wav")
+        wavfile.write(audio_path, 16000, data)
+
     context = zmq.Context()
     #Initiate socket for sending disqualify decision
     socket = context.socket(zmq.PUB)
@@ -45,7 +54,7 @@ def get_oldest_file(dir_path):
 
 
 if __name__ == "__main__":
-    dir_path, evidence_dir = get_dir_path()
+    dir_path, evidence_dir, log_dir = get_dir_path()
     oldest_file_path = get_oldest_file(evidence_dir)
     
     st.title("Protoring Notification Window")
@@ -60,21 +69,23 @@ if __name__ == "__main__":
         file_name, file_extension = os.path.splitext(oldest_file_name)
         if file_extension == ".jpg":
             image = cv.imread(oldest_file_path)
-            behavior = file_name.split("_")[0]
+            behavior = file_name.split("_")[1]
+            matrikelnr = file_name.split("_")[0]
             os.remove(oldest_file_path)
             with st.container():
                 st.divider()
-                st.text(f"Cheating detected! {behavior}")
+                st.text(f"Matrikelnr. {matrikelnr} - Cheating detected! {behavior}")
                 st.image(image, caption=behavior, channels="BGR")
-                st.button("Yes!", on_click=send_disqualify, args=(behavior,))
+                st.button("Yes!", on_click=send_disqualify, args=(behavior, file_extension, image, log_dir, matrikelnr, ))
                 st.button("No.")
         elif file_extension == ".wav":
             sample_rate, audio = wavfile.read(oldest_file_path)
-            behavior = file_name.split("_")[0]
+            behavior = file_name.split("_")[1]
+            matrikelnr = file_name.split("_")[0]
             os.remove(oldest_file_path)
             with st.container():
                 st.divider()
-                st.text(f"Cheating detected! {behavior}")
+                st.text(f"Matrikelnr. {matrikelnr} - Cheating detected! {behavior}")
                 st.audio(audio, sample_rate=sample_rate)
                 st.button("Yes!", on_click=send_disqualify, args=(behavior,))
                 st.button("No.")

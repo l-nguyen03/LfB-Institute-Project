@@ -39,13 +39,14 @@ def receive_frame(stop_event):
 
             descriptor = descriptor_bytes.decode()
             print(f"Frame description: {descriptor}")
-
+            matrikelnr = descriptor.split(":")[0]
             behaviour = descriptor.split(" at ")[0]
+            behaviour = behaviour.split(": ")[1]
             frame = np.frombuffer(frame_bytes, dtype=np.uint8)
             frame_decoded = cv.imdecode(frame, cv.IMREAD_COLOR)
 
             date_time = datetime.now().strftime("%Y_%m_%d-%H_%M_%S")
-            image_path = os.path.join(evidence_dir, f"{behaviour}_{date_time}.jpg")
+            image_path = os.path.join(evidence_dir, f"{matrikelnr}_{behaviour}_{date_time}.jpg")
             cv.imwrite(image_path, frame_decoded)
 
 
@@ -65,10 +66,11 @@ def receive_audio(stop_event):
 
             # Convert the bytes back to original audio data format
             audio_data = np.frombuffer(audio_bytes, dtype=np.int16).transpose()
-
-            behaviour = descriptor.split(" ")[0]
+            matrikelnr = descriptor.split(":")[0]
+            behaviour = descriptor.split(" at ")[0]
+            behaviour = behaviour.split(": ")[1]
             date_time = datetime.now().strftime("%Y_%m_%d-%H_%M_%S")
-            audio_path = os.path.join(evidence_dir, f"{behaviour}_{date_time}.wav")
+            audio_path = os.path.join(evidence_dir, f"{matrikelnr}_{behaviour}_{date_time}.wav")
             wavfile.write(audio_path, SAMPLE_RATE, audio_data)
 
 

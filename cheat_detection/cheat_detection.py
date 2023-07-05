@@ -42,7 +42,7 @@ def face_monitor():
     if not ret:
         print("Can't receive frame!")
     else:
-        cheat, frame, descriptor = camera_monitor(frame)
+        cheat, frame, descriptor = camera_monitor(frame, TEST_TAKER)
         if cheat:
             #image_path = os.path.join(dir_path, "frame_evidence", f"{date_time}.jpg")
             _, frame_encoded = cv.imencode('.jpg', frame)
@@ -72,7 +72,7 @@ def audio_detection(stop_event, audio_queue):
     while not stop_event.is_set():
         if not audio_queue.empty():
             recorded_audio = audio_queue.get()
-            cheat, descriptor, audio =  predict_audio(recorded_audio, SAMPLE_RATE)
+            cheat, descriptor, audio =  predict_audio(recorded_audio, SAMPLE_RATE, TEST_TAKER)
             if cheat: 
                 audio_bytes = audio.tobytes()
                 topic = "audio_evidence"
@@ -109,6 +109,14 @@ def receive_proctor_message():
 
 
 if __name__ == "__main__":
+    while True:
+        try:
+            TEST_TAKER = int(input("Please input your Matrikelnr.: "))
+        except ValueError:
+            print("Please only insert number")
+            continue
+        break
+    
     try:
         context = zmq.Context()
         

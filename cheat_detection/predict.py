@@ -63,7 +63,7 @@ wav_file: (string) path to wave file.
 <Return Var>: <Return Type>
 _ : (Boolean) True for non-cheat and False for cheating.
 """
-def predict_audio(wav, rate):
+def predict_audio(wav, rate, matrikelnr):
 
     # Classify sound event
     audio, audio_batch = audio_preprocess(wav)
@@ -74,7 +74,7 @@ def predict_audio(wav, rate):
             if category in CHEAT:
                 timestamp = time.time()
                 timestamp = str(datetime.fromtimestamp(timestamp))
-                descriptor = f"{category} at {timestamp}"
+                descriptor = f"{matrikelnr}: {category} at {timestamp}"
                 print(f"CHEATING DETECTED: {category}")
                 return True, descriptor, audio
             else:
