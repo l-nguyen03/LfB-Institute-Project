@@ -114,15 +114,15 @@ if __name__ == "__main__":
         
         #Initiate socket for sending image frame
         socket_frame = context.socket(zmq.PUB)
-        socket_frame.bind("tcp://*:5555")
+        socket_frame.connect("tcp://localhost:5555")
 
         #Initiate socket for sending audio frame
         socket_audio = context.socket(zmq.PUB)
-        socket_audio.bind("tcp://*:5556")
+        socket_audio.connect("tcp://localhost:5556")
 
         #Initiate socket for receiving proctor's commmand
         socket_proctor = context.socket(zmq.SUB)
-        socket_proctor.bind("tcp://*:5558")
+        socket_proctor.connect("tcp://localhost:5558")
         socket_proctor.setsockopt_string(zmq.SUBSCRIBE, "DISQUALIFIED")
 
         audio = pyaudio.PyAudio()
