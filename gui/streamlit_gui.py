@@ -87,7 +87,7 @@ if __name__ == "__main__":
                 st.divider()
                 st.text(f"Matrikelnr. {matrikelnr} - Cheating detected! {behavior}")
                 st.audio(audio, sample_rate=sample_rate)
-                st.button("Yes!", on_click=send_disqualify, args=(behavior,))
+                st.button("Yes!", on_click=send_disqualify, args=(behavior, file_extension, audio, log_dir, matrikelnr, ))
                 st.button("No.")
 
 
