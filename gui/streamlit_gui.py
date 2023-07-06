@@ -16,8 +16,20 @@ def get_dir_path():
     return dir_path, evidence_dir, log_dir
 
 
+def remove_files(dir_path, matrikelnr):
+    for filename in os.listdir(dir_path):
+        # If the 'matrikelnr' substring is in the file name, delete the file
+        if str(matrikelnr) in filename:
+            file_path = os.path.join(dir_path, filename)
+            try:
+                os.remove(file_path)
+                print(f"File {filename} has been deleted.")
+            except OSError as e:
+                print(f"Error: {e.filename} - {e.strerror}.")
 
-def send_disqualify(behaviour, file_extension, data, log_dir, matrikelnr):
+
+
+def send_disqualify(behaviour, file_extension, data, log_dir, matrikelnr, evidence_dir):
     if file_extension == ".jpg":
         image_path = os.path.join(log_dir, f"{matrikelnr}_{behaviour}.jpg")
         cv.imwrite(image_path, data)
@@ -30,9 +42,10 @@ def send_disqualify(behaviour, file_extension, data, log_dir, matrikelnr):
     socket = context.socket(zmq.PUB)
     socket.bind("tcp://*:5558")
     time.sleep(2)
-    topic = "DISQUALIFIED"
+    topic = f"{matrikelnr}_DISQUALIFIED"
     message = f"You are hereby disqualified because of cheating behaviour: {behaviour}"
     socket.send_multipart([topic.encode(), message.encode()])
+    remove_files(evidence_dir, matrikelnr)
     socket.close()
     context.term()
 
@@ -76,7 +89,7 @@ if __name__ == "__main__":
                 st.divider()
                 st.text(f"Matrikelnr. {matrikelnr} - Cheating detected! {behavior}")
                 st.image(image, caption=behavior, channels="BGR")
-                st.button("Yes!", on_click=send_disqualify, args=(behavior, file_extension, image, log_dir, matrikelnr, ))
+                st.button("Yes!", on_click=send_disqualify, args=(behavior, file_extension, image, log_dir, matrikelnr, evidence_dir, ))
                 st.button("No.")
         elif file_extension == ".wav":
             sample_rate, audio = wavfile.read(oldest_file_path)
@@ -87,7 +100,7 @@ if __name__ == "__main__":
                 st.divider()
                 st.text(f"Matrikelnr. {matrikelnr} - Cheating detected! {behavior}")
                 st.audio(audio, sample_rate=sample_rate)
-                st.button("Yes!", on_click=send_disqualify, args=(behavior, file_extension, audio, log_dir, matrikelnr, ))
+                st.button("Yes!", on_click=send_disqualify, args=(behavior, file_extension, audio, log_dir, matrikelnr, evidence_dir, ))
                 st.button("No.")
 
 

@@ -131,7 +131,7 @@ if __name__ == "__main__":
         #Initiate socket for receiving proctor's commmand
         socket_proctor = context.socket(zmq.SUB)
         socket_proctor.connect("tcp://localhost:5558")
-        socket_proctor.setsockopt_string(zmq.SUBSCRIBE, "DISQUALIFIED")
+        socket_proctor.setsockopt_string(zmq.SUBSCRIBE, f"{TEST_TAKER}_DISQUALIFIED")
 
         audio = pyaudio.PyAudio()
         #start stream
